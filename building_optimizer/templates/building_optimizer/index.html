@@ -702,9 +702,6 @@
                 <button class="toggle-button" onclick="toggleLayer('residential')" id="residential-btn">
                     <span><i class="fas fa-home me-2"></i>Жилые дома</span>
                 </button>
-                <button class="toggle-button" onclick="toggleLayer('commercial')" id="commercial-btn">
-                    <span><i class="fas fa-store me-2"></i>Торговые точки</span>
-                </button>
             </div>
 
             <!-- Districts Section -->
@@ -887,26 +884,23 @@
         let districtsPolygons = [];
         let schoolsMarkers = [];
         let residentialMarkers = [];
-        let commercialMarkers = [];
         
         // Переменные для выбора районов
         let selectedDistricts = new Set();
         let districtPolygonMap = new Map(); // Карта: название района -> полигон
         
-        // Состояние слоев
+        // Состояние слоев (убрали commercial)
         let layersState = {
             heatmap: true,
             schools: true,
-            residential: false,
-            commercial: false
+            residential: false
         };
         
-        // Данные
+        // Данные (убрали commercial)
         let cityData = {
             districts: [],
             schools: [],
             residential: [],
-            commercial: [],
             heatmapData: []
         };
 
@@ -943,55 +937,116 @@
         // Загрузка данных
         async function loadAllCityData() {
             try {
+                console.log('🔄 Загружаем данные города...');
                 const response = await fetch(`/api/enhanced-heatmap/?city=Бишкек`);
                 const data = await response.json();
+
+                console.log('📊 Ответ API:', data);
 
                 if (data.success) {
                     cityData = {
                         districts: data.districts || [],
                         schools: data.schools || [],
                         residential: data.residential_buildings || [],
-                        commercial: data.commercial_places || [],
                         heatmapData: data.heatmap_data || []
                     };
 
+                    console.log('✅ Данные загружены:');
+                    console.log(`📍 Районов: ${cityData.districts.length}`);
+                    console.log(`🏫 Школ: ${cityData.schools.length}`);
+                    console.log(`🏠 Жилых домов: ${cityData.residential.length}`);
+                    console.log(`🔥 Точек тепловой карты: ${cityData.heatmapData.length}`);
+                    
+                    // Проверяем геометрию районов
+                    cityData.districts.forEach((district, index) => {
+                        console.log(`🗺️ Район "${district.name}": геометрия = ${district.geometry ? district.geometry.length : 0} полигонов`);
+                    });
+
                     displayAllLayers();
+                } else {
+                    console.error('❌ Ошибка API:', data.error);
                 }
             } catch (error) {
-                console.error('Ошибка загрузки:', error);
+                console.error('❌ Ошибка загрузки:', error);
             }
         }
 
-        // Отображение слоев - ОБНОВЛЕНО
+        // Отображение слоев (убрали commercial)
         function displayAllLayers() {
+            console.log('🔄 Начинаем отображение всех слоев...');
+            console.log('📊 Состояние слоев:', layersState);
+            
             clearAllLayers();
             
-            if (layersState.heatmap) displayHeatmap();
-            if (layersState.schools) displaySchools();
-            if (layersState.residential) displayResidential();
-            if (layersState.commercial) displayCommercial();
+            if (layersState.heatmap) {
+                console.log('🔥 Отображаем тепловую карту...');
+                displayHeatmap();
+            }
+            
+            if (layersState.schools) {
+                console.log('🏫 Отображаем школы...');
+                displaySchools();
+            }
+            
+            if (layersState.residential) {
+                console.log('🏠 Отображаем жилые дома...');
+                displayResidential();
+            }
             
             // Всегда показываем границы районов
+            console.log('🗺️ Отображаем границы районов...');
             displayDistricts();
+            
+            console.log('✅ Отображение всех слоев завершено');
         }
 
         function clearAllLayers() {
+            console.log('🧹 Очищаем все слои...');
+            
+            // Очистка тепловой карты
             if (heatmap) {
                 heatmap.setMap(null);
                 heatmap = null;
+                console.log('✅ Тепловая карта очищена');
             }
             
-            districtsPolygons.forEach(polygon => polygon.setMap(null));
+            // Очистка полигонов районов - ИСПРАВЛЕНО
+            districtPolygonMap.forEach((polygons, districtId) => {
+                if (Array.isArray(polygons)) {
+                    polygons.forEach(polygon => {
+                        if (polygon && typeof polygon.setMap === 'function') {
+                            polygon.setMap(null);
+                        }
+                    });
+                }
+            });
+            districtPolygonMap.clear();
+            
+            districtsPolygons.forEach(polygon => {
+                if (polygon && typeof polygon.setMap === 'function') {
+                    polygon.setMap(null);
+                }
+            });
             districtsPolygons = [];
+            console.log('✅ Полигоны районов очищены');
             
-            schoolsMarkers.forEach(marker => marker.setMap(null));
+            // Очистка маркеров школ
+            schoolsMarkers.forEach(marker => {
+                if (marker && typeof marker.setMap === 'function') {
+                    marker.setMap(null);
+                }
+            });
             schoolsMarkers = [];
+            console.log('✅ Маркеры школ очищены');
             
-            residentialMarkers.forEach(marker => marker.setMap(null));
+            // Очистка маркеров жилых домов
+            residentialMarkers.forEach(marker => {
+                if (marker && typeof marker.setMap === 'function') {
+                    marker.setMap(null);
+                }
+            });
             residentialMarkers = [];
-            
-            commercialMarkers.forEach(marker => marker.setMap(null));
-            commercialMarkers = [];
+            console.log('✅ Маркеры жилых домов очищены');
         }
 
         function displayHeatmap() {
@@ -1011,17 +1066,44 @@
         }
 
         function displayDistricts() {
-            if (cityData.districts.length === 0) return;
+            console.log('🗺️ Начинаем отображение районов...');
+            
+            if (cityData.districts.length === 0) {
+                console.warn('⚠️ Нет данных о районах для отображения');
+                return;
+            }
 
-            // Очистка предыдущих полигонов
-            districtPolygonMap.forEach(polygon => polygon.setMap(null));
+            console.log(`📋 Отображаем ${cityData.districts.length} районов`);
+
+            // Очистка предыдущих полигонов - ИСПРАВЛЕНО
+            districtPolygonMap.forEach((polygons, districtId) => {
+                if (Array.isArray(polygons)) {
+                    polygons.forEach(polygon => {
+                        if (polygon && typeof polygon.setMap === 'function') {
+                            polygon.setMap(null);
+                        }
+                    });
+                }
+            });
             districtPolygonMap.clear();
             
             cityData.districts.forEach((district, index) => {
-                if (!district.geometry || district.geometry.length === 0) return;
+                console.log(`🔍 Обрабатываем район "${district.name}"`);
+                
+                if (!district.geometry || district.geometry.length === 0) {
+                    console.warn(`⚠️ Район "${district.name}" не имеет геометрии`);
+                    return;
+                }
 
-                district.geometry.forEach(polygonPath => {
-                    if (!polygonPath || polygonPath.length < 3) return;
+                console.log(`📐 Район "${district.name}" имеет ${district.geometry.length} полигонов`);
+
+                district.geometry.forEach((polygonPath, polyIndex) => {
+                    if (!polygonPath || polygonPath.length < 3) {
+                        console.warn(`⚠️ Полигон ${polyIndex} района "${district.name}" имеет недостаточно точек: ${polygonPath ? polygonPath.length : 0}`);
+                        return;
+                    }
+
+                    console.log(`✅ Создаем полигон ${polyIndex} для района "${district.name}" с ${polygonPath.length} точками`);
 
                     const polygon = new google.maps.Polygon({
                         paths: polygonPath,
@@ -1045,6 +1127,7 @@
 
                     // Клик по полигону на карте
                     polygon.addListener('click', (event) => {
+                        console.log(`🖱️ Клик по району "${district.name}"`);
                         const districtId = getDistrictIdByName(district.name);
                         if (districtId) {
                             toggleDistrictSelection(districtId);
@@ -1053,18 +1136,33 @@
                         infoWindow.open(map);
                     });
 
-                    // Сохраняем полигон в карте
+                    // Сохраняем полигон в карте - ИСПРАВЛЕНО
                     const districtId = getDistrictIdByName(district.name);
                     if (districtId) {
                         if (!districtPolygonMap.has(districtId)) {
                             districtPolygonMap.set(districtId, []);
                         }
                         districtPolygonMap.get(districtId).push(polygon);
+                        console.log(`💾 Полигон сохранен для района ${districtId}`);
                     }
 
                     districtsPolygons.push(polygon);
+                    
+                    // Применяем стиль если район уже выбран
+                    const districtIdCheck = getDistrictIdByName(district.name);
+                    if (selectedDistricts.has(districtIdCheck)) {
+                        console.log(`🎯 Применяем выбранный стиль для района ${districtIdCheck}`);
+                        polygon.setOptions({
+                            fillColor: '#1a1a1a',
+                            fillOpacity: 0.6,
+                            strokeWeight: 4,
+                            strokeColor: '#000000'
+                        });
+                    }
                 });
             });
+            
+            console.log(`✅ Завершено отображение районов. Создано ${districtsPolygons.length} полигонов`);
         }
 
         // Получить ID района по его названию
@@ -1155,42 +1253,28 @@
             });
         }
 
-        function displayCommercial() {
-            if (cityData.commercial.length === 0) return;
-
-            cityData.commercial.forEach(place => {
-                const marker = new google.maps.Marker({
-                    position: { lat: place.lat, lng: place.lng },
-                    map: map,
-                    title: place.name,
-                    icon: {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        scale: 6,
-                        fillColor: '#8a2be2',
-                        fillOpacity: 0.8,
-                        strokeColor: '#ffffff',
-                        strokeWeight: 2
-                    }
-                });
-
-                commercialMarkers.push(marker);
-            });
-        }
-
         function toggleLayer(layerName) {
+            console.log(`🔘 Переключение слоя "${layerName}"`);
+            console.log(`📊 Текущее состояние: ${layersState[layerName]}`);
+            
             layersState[layerName] = !layersState[layerName];
+            
+            console.log(`📊 Новое состояние: ${layersState[layerName]}`);
             
             const button = document.getElementById(`${layerName}-btn`);
             if (layersState[layerName]) {
                 button.classList.add('active');
+                console.log(`✅ Кнопка "${layerName}" активирована`);
             } else {
                 button.classList.remove('active');
+                console.log(`❌ Кнопка "${layerName}" деактивирована`);
             }
             
+            console.log('🔄 Перерисовываем слои...');
             displayAllLayers();
         }
 
-        // ШКОЛЬНАЯ ИНФОРМАЦИЯ - СОХРАНЕНО
+        // ШКОЛЬНАЯ ИНФОРМАЦИЯ
         async function getEnhancedSchoolInfo(schoolName, schoolLat, schoolLng) {
             const schoolInfoDiv = document.getElementById('school-info');
             const schoolInfoContent = document.getElementById('school-info-content');
@@ -1281,46 +1365,59 @@
 
         // Toggle district selection
         function toggleDistrictSelection(districtId) {
+            console.log(`🎯 Переключение выбора района: ${districtId}`);
+            
             const districtItem = document.querySelector(`[data-district="${districtId}"]`);
             const polygons = districtPolygonMap.get(districtId);
+            
+            console.log(`📍 Найден DOM элемент: ${!!districtItem}`);
+            console.log(`🗺️ Найдены полигоны: ${polygons ? polygons.length : 0}`);
             
             if (selectedDistricts.has(districtId)) {
                 // Убираем выбор
                 selectedDistricts.delete(districtId);
-                districtItem.classList.remove('selected');
+                if (districtItem) districtItem.classList.remove('selected');
                 
                 // Возвращаем обычный стиль полигонам
-                if (polygons) {
+                if (polygons && Array.isArray(polygons)) {
                     polygons.forEach(polygon => {
-                        polygon.setOptions({
-                            fillColor: '#e5e5e5',
-                            fillOpacity: 0.2,
-                            strokeWeight: 2,
-                            strokeColor: '#4a4a4a'
-                        });
+                        if (polygon && typeof polygon.setOptions === 'function') {
+                            polygon.setOptions({
+                                fillColor: '#e5e5e5',
+                                fillOpacity: 0.2,
+                                strokeWeight: 2,
+                                strokeColor: '#4a4a4a'
+                            });
+                        }
                     });
                 }
+                console.log(`❌ Район ${districtId} убран из выбора`);
             } else {
                 // Добавляем выбор
                 selectedDistricts.add(districtId);
-                districtItem.classList.add('selected');
+                if (districtItem) districtItem.classList.add('selected');
                 
                 // Подсвечиваем полигоны
-                if (polygons) {
+                if (polygons && Array.isArray(polygons)) {
                     polygons.forEach(polygon => {
-                        polygon.setOptions({
-                            fillColor: '#1a1a1a',
-                            fillOpacity: 0.6,
-                            strokeWeight: 4,
-                            strokeColor: '#000000'
-                        });
+                        if (polygon && typeof polygon.setOptions === 'function') {
+                            polygon.setOptions({
+                                fillColor: '#1a1a1a',
+                                fillOpacity: 0.6,
+                                strokeWeight: 4,
+                                strokeColor: '#000000'
+                            });
+                        }
                     });
                 }
+                console.log(`✅ Район ${districtId} добавлен в выбор`);
             }
+            
+            console.log(`📊 Выбранные районы: [${Array.from(selectedDistricts).join(', ')}]`);
             updateAnalyzeButton();
         }
 
-        // Update analyze button - УПРОЩЕНО
+        // Update analyze button
         function updateAnalyzeButton() {
             document.getElementById('analyzeBtn').disabled = selectedDistricts.size === 0;
         }
@@ -1330,8 +1427,10 @@
             startAnalysis();
         });
 
-        // Start analysis - ОБНОВЛЕНО
+        // Start analysis
         async function startAnalysis() {
+            console.log('🚀 Запускаем анализ для районов:', Array.from(selectedDistricts));
+            
             const resultsPanel = document.getElementById('resultsPanel');
             const loadingSection = document.getElementById('loadingSection');
             const resultsData = document.getElementById('resultsData');
@@ -1345,6 +1444,8 @@
                     districts: Array.from(selectedDistricts)
                 };
                 
+                console.log('📤 Отправляем данные для анализа:', analysisData);
+                
                 const response = await fetch('/api/analyze/', {
                     method: 'POST',
                     headers: {
@@ -1355,13 +1456,17 @@
                 });
                 
                 const data = await response.json();
+                console.log('📥 Результат анализа:', data);
                 
                 if (data.success) {
                     showResults(data.results);
                 } else {
+                    console.error('❌ Ошибка анализа:', data.error);
                     throw new Error(data.error || 'Ошибка анализа');
                 }
             } catch (error) {
+                console.error('❌ Ошибка запроса анализа:', error);
+                // Показываем демо результаты в случае ошибки
                 setTimeout(() => showResults(), 2000);
             }
         }
@@ -1398,7 +1503,7 @@
             createCharts(data ? data.charts : null);
         }
 
-        // НОВЫЙ ФУНКЦИОНАЛ - Create charts
+        // Create charts
         function createCharts(chartData = null) {
             // District chart
             const districtCtx = document.getElementById('districtChart').getContext('2d');
@@ -1456,12 +1561,12 @@
             });
         }
 
-        // НОВЫЙ ФУНКЦИОНАЛ - Close results panel
+        // Close results panel
         document.getElementById('closeResults').addEventListener('click', () => {
             document.getElementById('resultsPanel').classList.remove('show');
         });
 
-        // УТИЛИТЫ - Get CSRF token
+        // Get CSRF token
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {

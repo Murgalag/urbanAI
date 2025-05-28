@@ -16,4 +16,5 @@ urlpatterns = [
     path('residential-buildings/', views.get_residential_buildings, name='residential_buildings'),
     path('commercial-places/', views.get_commercial_places, name='commercial_places'),
     path('enhanced-school-info/', views.get_enhanced_school_info, name='enhanced_school_info'),
+    path('analyze/', views.analyze_districts, name='analyze_districts'),
 ]
