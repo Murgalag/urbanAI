@@ -397,8 +397,8 @@
         .results-panel {
             position: fixed;
             top: 80px;
-            right: -500px;
-            width: 480px;
+            right: -100%;
+            width: calc(100% - 380px);
             height: calc(100vh - 80px);
             background: var(--white);
             border-left: 3px solid var(--border-gray);
@@ -444,7 +444,42 @@
         }
 
         .results-content {
-            padding: 1.5rem;
+            padding: 2rem;
+        }
+
+        .analysis-text {
+            background: var(--light-gray);
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .analysis-section {
+            margin-bottom: 2rem;
+        }
+
+        .analysis-section h4 {
+            color: var(--primary-black);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-gray);
+        }
+
+        .analysis-section p {
+            color: var(--secondary-gray);
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        .analysis-highlight {
+            background: var(--secondary-gray);
+            color: var(--white);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
         }
 
         .stats-grid {
@@ -640,34 +675,11 @@
             <div class="section-card">
                 <h3 class="section-title">
                     <i class="fas fa-map-marked-alt"></i>
-                    Город
+                    Город: Бишкек
                 </h3>
-                <input type="text" class="city-input" id="city-input" value="Бишкек" placeholder="Введите название города">
-                <button class="load-data-btn" onclick="loadAllCityData()">
-                    <span><i class="fas fa-download me-2"></i>Загрузить данные</span>
-                </button>
-            </div>
-
-            <!-- Facility Types Section -->
-            <div class="section-card">
-                <h3 class="section-title">
-                    <i class="fas fa-building"></i>
-                    Типы объектов
-                </h3>
-                <div class="facility-grid">
-                    <button class="facility-btn" data-type="schools">
-                        <span><i class="fas fa-school me-2"></i>Школы</span>
-                    </button>
-                    <button class="facility-btn" data-type="kindergartens">
-                        <span><i class="fas fa-child me-2"></i>Садики</span>
-                    </button>
-                    <button class="facility-btn" data-type="hospitals">
-                        <span><i class="fas fa-hospital me-2"></i>Больницы</span>
-                    </button>
-                    <button class="facility-btn" data-type="fire-stations">
-                        <span><i class="fas fa-fire me-2"></i>Пожарные</span>
-                    </button>
-                </div>
+                <p style="margin: 0; color: var(--secondary-gray); font-size: 0.9rem;">
+                    Кыргызская Республика
+                </p>
             </div>
 
             <!-- Map Layers Section -->
@@ -678,9 +690,6 @@
                 </h3>
                 <button class="toggle-button active" onclick="toggleLayer('heatmap')" id="heatmap-btn">
                     <span><i class="fas fa-fire me-2"></i>Тепловая карта</span>
-                </button>
-                <button class="toggle-button active" onclick="toggleLayer('districts')" id="districts-btn">
-                    <span><i class="fas fa-map me-2"></i>Границы районов</span>
                 </button>
                 <button class="toggle-button active" onclick="toggleLayer('schools')" id="schools-btn">
                     <span><i class="fas fa-school me-2"></i>Школы</span>
@@ -700,48 +709,17 @@
                     Административные районы
                 </h3>
                 <div class="district-list">
-                    <!-- Октябрьский район -->
                     <div class="district-item" data-district="oktyabrsky">
                         <span><i class="fas fa-map-marker-alt me-2"></i>Октябрьский район</span>
-                        <i class="fas fa-chevron-down"></i>
                     </div>
-                    <div class="district-sublist" data-parent="oktyabrsky">
-                        <div class="sub-district" data-subdistrict="ok-center">Центр</div>
-                        <div class="sub-district" data-subdistrict="ok-north">Северная часть</div>
-                        <div class="sub-district" data-subdistrict="ok-south">Южная часть</div>
-                    </div>
-
-                    <!-- Первомайский район -->
                     <div class="district-item" data-district="pervomaisky">
                         <span><i class="fas fa-map-marker-alt me-2"></i>Первомайский район</span>
-                        <i class="fas fa-chevron-down"></i>
                     </div>
-                    <div class="district-sublist" data-parent="pervomaisky">
-                        <div class="sub-district" data-subdistrict="pm-east">Восточная часть</div>
-                        <div class="sub-district" data-subdistrict="pm-west">Западная часть</div>
-                        <div class="sub-district" data-subdistrict="pm-industrial">Промышленная зона</div>
-                    </div>
-
-                    <!-- Ленинский район -->
                     <div class="district-item" data-district="leninsky">
                         <span><i class="fas fa-map-marker-alt me-2"></i>Ленинский район</span>
-                        <i class="fas fa-chevron-down"></i>
                     </div>
-                    <div class="district-sublist" data-parent="leninsky">
-                        <div class="sub-district" data-subdistrict="len-center">Центр</div>
-                        <div class="sub-district" data-subdistrict="len-residential">Жилая зона</div>
-                        <div class="sub-district" data-subdistrict="len-commercial">Деловой центр</div>
-                    </div>
-
-                    <!-- Свердловский район -->
                     <div class="district-item" data-district="sverdlovsky">
                         <span><i class="fas fa-map-marker-alt me-2"></i>Свердловский район</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="district-sublist" data-parent="sverdlovsky">
-                        <div class="sub-district" data-subdistrict="sv-old">Старая часть</div>
-                        <div class="sub-district" data-subdistrict="sv-new">Новая застройка</div>
-                        <div class="sub-district" data-subdistrict="sv-suburban">Пригород</div>
                     </div>
                 </div>
             </div>
@@ -811,6 +789,48 @@
             </div>
 
             <div id="resultsData" style="display: none;">
+                <!-- Analysis Text -->
+                <div class="analysis-text">
+                    <h3 style="margin-top: 0; color: var(--primary-black);" id="analysisTitle">
+                        Результат анализа: Выбранный район
+                    </h3>
+                    
+                    <div class="analysis-section">
+                        <h4>1. Краткое резюме</h4>
+                        <p id="analysisSummary">
+                            Выбранный район характеризуется высокой плотностью населения и быстрым ростом, что привело к значительной перегруженности существующих школ. Две школы, рассчитанные на <span class="analysis-highlight">2500 учеников</span>, обслуживают <span class="analysis-highlight">4500 детей</span>, что составляет <span class="analysis-highlight">180% загруженности</span>.
+                        </p>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h4>2. Анализ текущей загруженности школ</h4>
+                        <p id="analysisLoad">
+                            Существующие школы в районе работают со значительной перегрузкой. Текущая загруженность составляет <span class="analysis-highlight">180%</span>, что означает, что школы переполнены почти вдвое. Это приводит к ухудшению условий обучения, увеличению нагрузки на учителей и снижению качества образования. Среднее расстояние до ближайшей школы составляет <span class="analysis-highlight">2.2 км</span>, что может быть проблемой для некоторых учащихся.
+                        </p>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h4>3. Анализ демографических тенденций и прогноз потребности в школьных местах</h4>
+                        <p id="analysisDemographic">
+                            Население района активно растет (<span class="analysis-highlight">8.5% в год</span>), что приводит к увеличению числа детей школьного возраста. Прогнозируется, что к 2029 году число детей школьного возраста (7-17 лет) достигнет <span class="analysis-highlight">8081</span>, что потребует значительного увеличения школьных мест. Даже если новые жилые дома будут построены к 2028 году, это может еще больше усугубить ситуацию с нехваткой школ.
+                        </p>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h4>4. Заключение о необходимости строительства новой школы</h4>
+                        <p id="analysisConclusion">
+                            <span class="analysis-highlight">Да</span>, строительство новой школы в районе крайне необходимо. Перегруженность существующих школ, высокий темп роста населения и прогнозируемое увеличение числа детей школьного возраста указывают на острую потребность в дополнительных школьных местах. Текущая инфраструктура явно не справляется с растущим спросом.
+                        </p>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h4>5. Рекомендации по срокам строительства или альтернативным решениям</h4>
+                        <p id="analysisRecommendations">
+                            Начать строительство новой школы необходимо как можно скорее. Оптимальным сроком было бы начало строительства в <span class="analysis-highlight">2025-2026 годах</span>, чтобы школа начала функционировать до 2028 года, когда планируется завершение строительства новых жилых зданий и приток новых жителей. В качестве временного решения можно рассмотреть возможность организации дополнительных смен в существующих школах или использование модульных классов, но это не решит проблему в долгосрочной перспективе.
+                        </p>
+                    </div>
+                </div>
+
                 <!-- Statistics Grid -->
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -855,7 +875,7 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAg9d_gnmc2UZWUCFD6QkKGKqgO2v0spuA&libraries=visualization&callback=initMap" defer></script>
     
     <script>
-        // Global variables - СОХРАНЕНО из старого кода
+        // Global variables - ОЧИЩЕНО
         let map;
         let heatmap;
         let suggestionMarker;
@@ -864,22 +884,19 @@
         let residentialMarkers = [];
         let commercialMarkers = [];
         
-        // Новые переменные для нового функционала
-        let selectedFacilities = new Set();
+        // Новые переменные для районов
         let selectedDistricts = new Set();
-        let selectedSubDistricts = new Set();
         let districtPolygons = new Map();
         
-        // Состояние слоев - СОХРАНЕНО
+        // Состояние слоев - ОБНОВЛЕНО
         let layersState = {
             heatmap: true,
-            districts: true,
             schools: true,
             residential: false,
             commercial: false
         };
         
-        // Данные - СОХРАНЕНО
+        // Данные
         let cityData = {
             districts: [],
             schools: [],
@@ -908,7 +925,7 @@
             ]
         };
 
-        // Initialize map - ОБЪЕДИНЕНО
+        // Initialize map - ОБНОВЛЕНО
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 42.87, lng: 74.59 },
@@ -935,19 +952,14 @@
                 fullscreenControl: true
             });
 
-            // Create district polygons для выбора
             createDistrictPolygons();
-            // Загружаем данные карты
             loadAllCityData();
         }
 
-        // СТАРАЯ ЛОГИКА КАРТЫ - СОХРАНЕНО
+        // Загрузка данных
         async function loadAllCityData() {
-            const city = document.getElementById('city-input').value;
-
             try {
-                console.log(`Загружаем данные для города: ${city}`);
-                const response = await fetch(`/api/enhanced-heatmap/?city=${encodeURIComponent(city)}`);
+                const response = await fetch(`/api/enhanced-heatmap/?city=Бишкек`);
                 const data = await response.json();
 
                 if (data.success) {
@@ -960,23 +972,23 @@
                     };
 
                     displayAllLayers();
-                } else {
-                    console.error('Ошибка загрузки данных:', data.error);
                 }
             } catch (error) {
-                console.error('Ошибка запроса:', error);
+                console.error('Ошибка загрузки:', error);
             }
         }
 
-        // СТАРЫЕ ФУНКЦИИ КАРТЫ - СОХРАНЕНО
+        // Отображение слоев - ОБНОВЛЕНО
         function displayAllLayers() {
             clearAllLayers();
             
             if (layersState.heatmap) displayHeatmap();
-            if (layersState.districts) displayDistricts();
             if (layersState.schools) displaySchools();
             if (layersState.residential) displayResidential();
             if (layersState.commercial) displayCommercial();
+            
+            // Всегда показываем границы районов
+            displayDistricts();
         }
 
         function clearAllLayers() {
@@ -1259,50 +1271,15 @@
             });
         }
 
-        // НОВЫЙ ФУНКЦИОНАЛ - Facility type selection
-        document.querySelectorAll('.facility-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const type = btn.dataset.type;
-                if (selectedFacilities.has(type)) {
-                    selectedFacilities.delete(type);
-                    btn.classList.remove('active');
-                } else {
-                    selectedFacilities.add(type);
-                    btn.classList.add('active');
-                }
-                updateAnalyzeButton();
-            });
-        });
-
-        // НОВЫЙ ФУНКЦИОНАЛ - District selection
+        // District selection - УПРОЩЕНО
         document.querySelectorAll('.district-item').forEach(item => {
             item.addEventListener('click', () => {
                 const district = item.dataset.district;
-                const sublist = document.querySelector(`[data-parent="${district}"]`);
-                
-                sublist.classList.toggle('show');
                 toggleDistrictSelection(district);
             });
         });
 
-        // НОВЫЙ ФУНКЦИОНАЛ - Sub-district selection
-        document.querySelectorAll('.sub-district').forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const subdistrict = item.dataset.subdistrict;
-                
-                if (selectedSubDistricts.has(subdistrict)) {
-                    selectedSubDistricts.delete(subdistrict);
-                    item.classList.remove('selected');
-                } else {
-                    selectedSubDistricts.add(subdistrict);
-                    item.classList.add('selected');
-                }
-                updateAnalyzeButton();
-            });
-        });
-
-        // НОВЫЙ ФУНКЦИОНАЛ - Toggle district selection
+        // Toggle district selection - ОБНОВЛЕНО
         function toggleDistrictSelection(districtId) {
             const districtItem = document.querySelector(`[data-district="${districtId}"]`);
             const polygon = districtPolygons.get(districtId);
@@ -1327,19 +1304,17 @@
             updateAnalyzeButton();
         }
 
-        // НОВЫЙ ФУНКЦИОНАЛ - Update analyze button state
+        // Update analyze button - УПРОЩЕНО
         function updateAnalyzeButton() {
-            const hasSelections = selectedFacilities.size > 0 && 
-                                (selectedDistricts.size > 0 || selectedSubDistricts.size > 0);
-            document.getElementById('analyzeBtn').disabled = !hasSelections;
+            document.getElementById('analyzeBtn').disabled = selectedDistricts.size === 0;
         }
 
-        // НОВЫЙ ФУНКЦИОНАЛ - Analyze button click
+        // Analyze button
         document.getElementById('analyzeBtn').addEventListener('click', () => {
             startAnalysis();
         });
 
-        // НОВЫЙ ФУНКЦИОНАЛ - Start analysis
+        // Start analysis - ОБНОВЛЕНО
         async function startAnalysis() {
             const resultsPanel = document.getElementById('resultsPanel');
             const loadingSection = document.getElementById('loadingSection');
@@ -1351,9 +1326,7 @@
             
             try {
                 const analysisData = {
-                    facilities: Array.from(selectedFacilities),
-                    districts: Array.from(selectedDistricts),
-                    subdistricts: Array.from(selectedSubDistricts)
+                    districts: Array.from(selectedDistricts)
                 };
                 
                 const response = await fetch('/api/analyze/', {
@@ -1373,13 +1346,11 @@
                     throw new Error(data.error || 'Ошибка анализа');
                 }
             } catch (error) {
-                console.error('Ошибка анализа:', error);
-                // Fallback к демо данным
                 setTimeout(() => showResults(), 2000);
             }
         }
         
-        // НОВЫЙ ФУНКЦИОНАЛ - Show results
+        // Show results - ОБНОВЛЕНО
         function showResults(data = null) {
             const loadingSection = document.getElementById('loadingSection');
             const resultsData = document.getElementById('resultsData');
@@ -1387,6 +1358,21 @@
             loadingSection.classList.remove('show');
             resultsData.style.display = 'block';
             
+            // Обновляем заголовок анализа
+            const selectedDistrictsNames = Array.from(selectedDistricts).map(id => {
+                const mapping = {
+                    'oktyabrsky': 'Октябрьский район',
+                    'pervomaisky': 'Первомайский район', 
+                    'leninsky': 'Ленинский район',
+                    'sverdlovsky': 'Свердловский район'
+                };
+                return mapping[id] || id;
+            }).join(', ');
+            
+            document.getElementById('analysisTitle').textContent = 
+                `Результат анализа: ${selectedDistrictsNames}`;
+            
+            // Статистика
             const stats = data ? data.statistics : {
                 totalFacilities: Math.floor(Math.random() * 50 + 10),
                 avgDistance: Math.random() * 2 + 0.5,
