@@ -521,8 +521,13 @@
             background: var(--white);
             border: 2px solid var(--border-gray);
             border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            height: 300px;
+        }
+
+        .chart-container canvas {
+            max-height: 250px !important;
         }
 
         .chart-title {
@@ -854,17 +859,17 @@
                 <!-- Charts -->
                 <div class="chart-container">
                     <h4 class="chart-title">Распределение по районам</h4>
-                    <canvas id="districtChart" width="400" height="200"></canvas>
+                    <canvas id="districtChart" width="400" height="150"></canvas>
                 </div>
 
                 <div class="chart-container">
                     <h4 class="chart-title">Анализ доступности</h4>
-                    <canvas id="accessibilityChart" width="400" height="200"></canvas>
+                    <canvas id="accessibilityChart" width="400" height="150"></canvas>
                 </div>
 
                 <div class="chart-container">
                     <h4 class="chart-title">Временные показатели</h4>
-                    <canvas id="timeChart" width="400" height="200"></canvas>
+                    <canvas id="timeChart" width="400" height="150"></canvas>
                 </div>
             </div>
         </div>
@@ -875,7 +880,7 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAg9d_gnmc2UZWUCFD6QkKGKqgO2v0spuA&libraries=visualization&callback=initMap" defer></script>
     
     <script>
-        // Global variables - ОЧИЩЕНО
+        // Global variables
         let map;
         let heatmap;
         let suggestionMarker;
@@ -884,11 +889,11 @@
         let residentialMarkers = [];
         let commercialMarkers = [];
         
-        // Новые переменные для районов
+        // Переменные для выбора районов
         let selectedDistricts = new Set();
-        let districtPolygons = new Map();
+        let districtPolygonMap = new Map(); // Карта: название района -> полигон
         
-        // Состояние слоев - ОБНОВЛЕНО
+        // Состояние слоев
         let layersState = {
             heatmap: true,
             schools: true,
@@ -905,27 +910,7 @@
             heatmapData: []
         };
 
-        // District boundaries - РАСШИРЕНО
-        const districtBoundaries = {
-            oktyabrsky: [
-                {lat: 42.8900, lng: 74.5700}, {lat: 42.8950, lng: 74.6100},
-                {lat: 42.8700, lng: 74.6200}, {lat: 42.8650, lng: 74.5800}
-            ],
-            pervomaisky: [
-                {lat: 42.8400, lng: 74.6200}, {lat: 42.8600, lng: 74.6500},
-                {lat: 42.8300, lng: 74.6600}, {lat: 42.8200, lng: 74.6300}
-            ],
-            leninsky: [
-                {lat: 42.8750, lng: 74.5400}, {lat: 42.8900, lng: 74.5800},
-                {lat: 42.8600, lng: 74.5900}, {lat: 42.8500, lng: 74.5500}
-            ],
-            sverdlovsky: [
-                {lat: 42.8600, lng: 74.5100}, {lat: 42.8800, lng: 74.5500},
-                {lat: 42.8400, lng: 74.5600}, {lat: 42.8300, lng: 74.5200}
-            ]
-        };
-
-        // Initialize map - ОБНОВЛЕНО
+        // Initialize map
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 42.87, lng: 74.59 },
@@ -952,7 +937,6 @@
                 fullscreenControl: true
             });
 
-            createDistrictPolygons();
             loadAllCityData();
         }
 
@@ -1029,26 +1013,27 @@
         function displayDistricts() {
             if (cityData.districts.length === 0) return;
 
-            const colors = ['#4a4a4a', '#6a6a6a', '#8a8a8a', '#aaaaaa'];
+            // Очистка предыдущих полигонов
+            districtPolygonMap.forEach(polygon => polygon.setMap(null));
+            districtPolygonMap.clear();
             
             cityData.districts.forEach((district, index) => {
                 if (!district.geometry || district.geometry.length === 0) return;
 
-                const color = colors[index % colors.length];
-                
                 district.geometry.forEach(polygonPath => {
                     if (!polygonPath || polygonPath.length < 3) return;
 
                     const polygon = new google.maps.Polygon({
                         paths: polygonPath,
-                        strokeColor: color,
+                        strokeColor: '#4a4a4a',
                         strokeOpacity: 0.8,
                         strokeWeight: 2,
-                        fillColor: color,
-                        fillOpacity: 0.35,
+                        fillColor: '#e5e5e5',
+                        fillOpacity: 0.2,
                         map: map
                     });
 
+                    // Информационное окно
                     const infoWindow = new google.maps.InfoWindow({
                         content: `
                             <div style="padding: 10px;">
@@ -1058,14 +1043,50 @@
                         `
                     });
 
+                    // Клик по полигону на карте
                     polygon.addListener('click', (event) => {
+                        const districtId = getDistrictIdByName(district.name);
+                        if (districtId) {
+                            toggleDistrictSelection(districtId);
+                        }
                         infoWindow.setPosition(event.latLng);
                         infoWindow.open(map);
                     });
 
+                    // Сохраняем полигон в карте
+                    const districtId = getDistrictIdByName(district.name);
+                    if (districtId) {
+                        if (!districtPolygonMap.has(districtId)) {
+                            districtPolygonMap.set(districtId, []);
+                        }
+                        districtPolygonMap.get(districtId).push(polygon);
+                    }
+
                     districtsPolygons.push(polygon);
                 });
             });
+        }
+
+        // Получить ID района по его названию
+        function getDistrictIdByName(name) {
+            const mapping = {
+                'Октябрьский район': 'oktyabrsky',
+                'Первомайский район': 'pervomaisky',
+                'Ленинский район': 'leninsky',
+                'Свердловский район': 'sverdlovsky'
+            };
+            return mapping[name] || null;
+        }
+
+        // Получить название района по ID
+        function getDistrictNameById(id) {
+            const mapping = {
+                'oktyabrsky': 'Октябрьский район',
+                'pervomaisky': 'Первомайский район',
+                'leninsky': 'Ленинский район',
+                'sverdlovsky': 'Свердловский район'
+            };
+            return mapping[id] || id;
         }
 
         function displaySchools() {
@@ -1250,28 +1271,7 @@
             }
         }
 
-        // НОВЫЙ ФУНКЦИОНАЛ - Create district polygons
-        function createDistrictPolygons() {
-            Object.keys(districtBoundaries).forEach(districtId => {
-                const polygon = new google.maps.Polygon({
-                    paths: districtBoundaries[districtId],
-                    strokeColor: '#4a4a4a',
-                    strokeOpacity: 0.8,
-                    strokeWeight: 2,
-                    fillColor: '#e5e5e5',
-                    fillOpacity: 0.2,
-                    map: map
-                });
-
-                polygon.addListener('click', () => {
-                    toggleDistrictSelection(districtId);
-                });
-
-                districtPolygons.set(districtId, polygon);
-            });
-        }
-
-        // District selection - УПРОЩЕНО
+        // District selection
         document.querySelectorAll('.district-item').forEach(item => {
             item.addEventListener('click', () => {
                 const district = item.dataset.district;
@@ -1279,27 +1279,43 @@
             });
         });
 
-        // Toggle district selection - ОБНОВЛЕНО
+        // Toggle district selection
         function toggleDistrictSelection(districtId) {
             const districtItem = document.querySelector(`[data-district="${districtId}"]`);
-            const polygon = districtPolygons.get(districtId);
+            const polygons = districtPolygonMap.get(districtId);
             
             if (selectedDistricts.has(districtId)) {
+                // Убираем выбор
                 selectedDistricts.delete(districtId);
                 districtItem.classList.remove('selected');
-                polygon.setOptions({
-                    fillColor: '#e5e5e5',
-                    fillOpacity: 0.2,
-                    strokeWeight: 2
-                });
+                
+                // Возвращаем обычный стиль полигонам
+                if (polygons) {
+                    polygons.forEach(polygon => {
+                        polygon.setOptions({
+                            fillColor: '#e5e5e5',
+                            fillOpacity: 0.2,
+                            strokeWeight: 2,
+                            strokeColor: '#4a4a4a'
+                        });
+                    });
+                }
             } else {
+                // Добавляем выбор
                 selectedDistricts.add(districtId);
                 districtItem.classList.add('selected');
-                polygon.setOptions({
-                    fillColor: '#1a1a1a',
-                    fillOpacity: 0.6,
-                    strokeWeight: 4
-                });
+                
+                // Подсвечиваем полигоны
+                if (polygons) {
+                    polygons.forEach(polygon => {
+                        polygon.setOptions({
+                            fillColor: '#1a1a1a',
+                            fillOpacity: 0.6,
+                            strokeWeight: 4,
+                            strokeColor: '#000000'
+                        });
+                    });
+                }
             }
             updateAnalyzeButton();
         }
@@ -1350,7 +1366,7 @@
             }
         }
         
-        // Show results - ОБНОВЛЕНО
+        // Show results
         function showResults(data = null) {
             const loadingSection = document.getElementById('loadingSection');
             const resultsData = document.getElementById('resultsData');
@@ -1360,13 +1376,7 @@
             
             // Обновляем заголовок анализа
             const selectedDistrictsNames = Array.from(selectedDistricts).map(id => {
-                const mapping = {
-                    'oktyabrsky': 'Октябрьский район',
-                    'pervomaisky': 'Первомайский район', 
-                    'leninsky': 'Ленинский район',
-                    'sverdlovsky': 'Свердловский район'
-                };
-                return mapping[id] || id;
+                return getDistrictNameById(id);
             }).join(', ');
             
             document.getElementById('analysisTitle').textContent = 
