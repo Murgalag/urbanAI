@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оптимизатор Размещения Зданий</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet.heat.min.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden; /* Prevent scrolling */
+        }
+        #sidebar {
+            width: 300px;
+            padding: 20px;
+            background-color: #f4f4f4;
+            border-right: 1px solid #ddd;
+            overflow-y: auto; /* Enable scrolling for sidebar content */
+            display: flex;
+            flex-direction: column;
+        }
+        #map-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        #map {
+            flex-grow: 1;
+            height: 100%; /* Make map fill remaining height */
+            z-index: 1; /* Ensure map is below sidebar if overlapping */
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        select,
+        button {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; /* Include padding in width */
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result, #history {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #eee;
+            background-color: #fff;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        #history ul {
+            list-style: none;
+            padding: 0;
+        }
+        #history li {
+            margin-bottom: 5px;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 5px;
+        }
+        #history li:last-child {
+            border-bottom: none;
+        }
+        .loading {
+            text-align: center;
+            font-style: italic;
+            color: #555;
+        }
+        .map-marker {
+            background-color: blue;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            white-space: nowrap;
+        }
+        .district-list-container {
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+        .district-list-container h3 {
+            margin-bottom: 10px;
+        }
+        .district-list {
+            list-style: none;
+            padding: 0;
+            max-height: 250px; /* Limit height for scrolling */
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        .district-list li {
+            padding: 8px 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #f9f9f9;
+        }
+        .district-list li:hover {
+            background-color: #e9e9e9;
+        }
+        .district-list li.selected {
+            background-color: #d1e7ff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h2>Оптимизатор Размещения</h2>
+        <div class="form-group">
+            <label for="city-input">Город:</label>
+            <input type="text" id="city-input" value="Бишкек">
+            <button onclick="updateMapAndData()">Загрузить данные по городу</button>
+        </div>
+
+        <div class="form-group">
+            <label for="building-type">Тип здания:</label>
+            <select id="building-type">
+                <option value="school">Школа</option>
+                <option value="hospital">Больница</option>
+                <option value="kindergarten">Детский сад</option>
+                <option value="pharmacy">Аптека</option>
+                <option value="shopping_center">Торговый центр</option>
+                <option value="park">Парк</option>
+            </select>
+            <button onclick="suggestLocation()">Предложить место</button>
+        </div>
+
+        <div id="result">
+            <h3>Рекомендация:</h3>
+            <p id="suggestion-text">Выберите тип здания и город для рекомендации.</p>
+        </div>
+
+        <div class="district-list-container">
+            <h3>Районы Бишкека:</h3>
+            <ul id="district-list" class="district-list">
+                <li>Загрузка районов...</li>
+            </ul>
+        </div>
+        
+        <button onclick="fetchAndDisplaySchools()">Показать школы</button>
+
+        <div id="history">
+            <h3>История запросов:</h3>
+            <ul id="history-list">
+                <li>История пуста.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script>
+        let map;
+        let suggestionMarker;
+        let schoolMarkers = L.layerGroup(); // Layer for schools
+        let districtPolygons = L.layerGroup(); // Layer for district polygons
+        let activeDistrictPolygon = null; // To keep track of the currently highlighted district
+        let districtPolygonLookup = {}; // Store mapping between district names and polygons
+
+        function initializeMap() {
+            if (map) {
+                map.remove(); // Remove existing map if re-initializing
+            }
+            map = L.map('map').setView([42.87, 74.59], 12); // Центр Бишкека, зум 12
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            schoolMarkers.addTo(map);
+            districtPolygons.addTo(map);
+        }
+
+        function getDistrictColor(districtName) {
+            // Generate different colors for different districts
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+            const hash = districtName.split('').reduce((a, b) => {
+                a = ((a << 5) - a) + b.charCodeAt(0);
+                return a & a;
+            }, 0);
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function validateAndFixPolygonCoords(coords) {
+            // Проверяем и исправляем координаты полигона
+            if (!Array.isArray(coords) || coords.length < 3) {
+                return null;
+            }
+            
+            // Убираем дублирующиеся соседние точки и невалидные координаты
+            const cleanCoords = [];
+            for (let i = 0; i < coords.length; i++) {
+                const current = coords[i];
+                
+                // Проверяем валидность координат
+                if (!Array.isArray(current) || current.length < 2 || 
+                    typeof current[0] !== 'number' || typeof current[1] !== 'number' ||
+                    isNaN(current[0]) || isNaN(current[1])) {
+                    continue;
+                }
+                
+                // Проверяем разумные значения координат для Бишкека
+                const lat = current[0];
+                const lng = current[1];
+                if (lat < 42.0 || lat > 43.5 || lng < 74.0 || lng > 75.5) {
+                    console.warn(`Координаты вне области Бишкека: [${lat}, ${lng}]`);
+                    continue;
+                }
+                
+                // Добавляем точку, если она не дублирует предыдущую
+                const prevPoint = cleanCoords[cleanCoords.length - 1];
+                if (!prevPoint || 
+                    Math.abs(prevPoint[0] - lat) > 0.00001 || 
+                    Math.abs(prevPoint[1] - lng) > 0.00001) {
+                    cleanCoords.push([lat, lng]);
+                }
+            }
+            
+            // Проверяем минимальное количество точек
+            if (cleanCoords.length < 3) {
+                return null;
+            }
+            
+            // Убеждаемся, что полигон замкнут
+            const first = cleanCoords[0];
+            const last = cleanCoords[cleanCoords.length - 1];
+            if (Math.abs(first[0] - last[0]) > 0.00001 || Math.abs(first[1] - last[1]) > 0.00001) {
+                cleanCoords.push([first[0], first[1]]);
+            }
+            
+            return cleanCoords;
+        }
+
+        async function fetchDistrictsAndDisplay() {
+            const city = document.getElementById('city-input').value;
+            const districtListElement = document.getElementById('district-list');
+            districtListElement.innerHTML = '<li>Загрузка районов...</li>';
+            
+            // Clear previous data
+            districtPolygons.clearLayers();
+            districtPolygonLookup = {};
+            
+            try {
+                const response = await fetch(`/api/districts/?city=${encodeURIComponent(city)}`);
+                const data = await response.json();
+
+                if (data.success && data.districts.length > 0) {
+                    districtListElement.innerHTML = ''; // Clear loading message
+                    
+                    data.districts.forEach((district, index) => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = district.name;
+                        listItem.dataset.lat = district.lat;
+                        listItem.dataset.lng = district.lng;
+                        listItem.dataset.districtName = district.name;
+
+                        // Store geometry for later use
+                        if (district.geometry && district.geometry.length > 0) {
+                            listItem.dataset.geometry = JSON.stringify(district.geometry);
+                        }
+
+                        listItem.onclick = () => highlightDistrict(district);
+                        districtListElement.appendChild(listItem);
+
+                        // ИСПРАВЛЕНИЕ: Правильная обработка геометрии районов
+                        if (district.geometry && district.geometry.length > 0) {
+                            const districtColor = getDistrictColor(district.name);
+                            
+                            // Для каждого района создаем отдельную группу полигонов
+                            const districtGroup = L.layerGroup();
+                            
+                            // Собираем все координаты для создания единого полигона или мультиполигона
+                            const allPolygonCoords = [];
+                            
+                            // Обрабатываем каждый полигон в геометрии района
+                            district.geometry.forEach((polygonCoords, polygonIndex) => {
+                                // Используем функцию валидации и исправления координат
+                                const validCoords = validateAndFixPolygonCoords(polygonCoords);
+                                
+                                if (validCoords) {
+                                    allPolygonCoords.push(validCoords);
+                                    console.log(`✓ Обработан полигон ${polygonIndex + 1} для района "${district.name}" с ${validCoords.length} точками`);
+                                } else {
+                                    console.warn(`✗ Полигон ${polygonIndex + 1} района "${district.name}" имеет некорректные координаты`);
+                                }
+                            });
+                            
+                            // Создаем полигон(ы) для района
+                            if (allPolygonCoords.length > 0) {
+                                try {
+                                    // ИСПРАВЛЕНИЕ: Создаем каждую часть района как отдельный независимый полигон
+                                    allPolygonCoords.forEach((coords, index) => {
+                                        try {
+                                            const polygon = L.polygon(coords, {
+                                                color: districtColor,
+                                                weight: 2,
+                                                opacity: 0.9,
+                                                fillColor: districtColor,
+                                                fillOpacity: 0.6,
+                                                smoothFactor: 1.0,
+                                                districtName: district.name,
+                                                partIndex: index
+                                            });
+                                            
+                                            polygon.bindPopup(`<b>${district.name}</b><br>Плотность: ${district.population_density || 'N/A'} чел/км²${allPolygonCoords.length > 1 ? `<br>Часть: ${index + 1}/${allPolygonCoords.length}` : ''}`);
+                                            districtGroup.addLayer(polygon);
+                                            
+                                            console.log(`✓ Создан независимый полигон ${index + 1} для района "${district.name}" с ${coords.length} точками`);
+                                        } catch (polygonError) {
+                                            console.error(`✗ Ошибка создания полигона ${index + 1} для района "${district.name}":`, polygonError);
+                                        }
+                                    });
+                                    
+                                    console.log(`✓ Район "${district.name}" создан из ${allPolygonCoords.length} независимых полигонов`);
+                                    
+                                } catch (error) {
+                                    console.error(`Общая ошибка создания полигонов для района "${district.name}":`, error);
+                                }
+                            }
+                            
+                            // Добавляем группу района на карту
+                            if (districtGroup.getLayers().length > 0) {
+                                districtGroup.addTo(districtPolygons);
+                                districtPolygonLookup[district.name] = districtGroup;
+                                console.log(`✓ Район "${district.name}" успешно добавлен на карту с ${districtGroup.getLayers().length} полигонами`);
+                            } else {
+                                console.error(`✗ Район "${district.name}" не добавлен - нет валидных полигонов`);
+                            }
+                            
+                        } else {
+                            console.warn(`Район "${district.name}" не имеет корректной геометрии`);
+                        }
+                    });
+                    
+                    console.log(`Всего загружено и отрисовано ${data.districts.length} районов.`);
+                } else {
+                    districtListElement.innerHTML = `<li>Не удалось загрузить районы для ${city}: ${data.message || 'Нет данных.'}</li>`;
+                    console.error('Ошибка при загрузке районов:', data.message || 'Неизвестная ошибка.');
+                }
+            } catch (error) {
+                districtListElement.innerHTML = `<li>Ошибка: ${error.message}</li>`;
+                console.error('Fetch error for districts:', error);
+            }
+        }
+
+        function highlightDistrict(district) {
+            // Reset all districts to default style
+            Object.values(districtPolygonLookup).forEach(districtGroup => {
+                districtGroup.eachLayer(polygon => {
+                    const originalColor = getDistrictColor(polygon.options.districtName);
+                    polygon.setStyle({
+                        color: originalColor,
+                        weight: 2,
+                        opacity: 0.8,
+                        fillOpacity: 0.2
+                    });
+                });
+            });
+
+            // Highlight selected district
+            const selectedDistrictGroup = districtPolygonLookup[district.name];
+            if (selectedDistrictGroup) {
+                selectedDistrictGroup.eachLayer(polygon => {
+                    polygon.setStyle({
+                        color: '#FF0000', // Red for highlight
+                        weight: 4,
+                        opacity: 1.0,
+                        fillOpacity: 0.4
+                    });
+                });
+
+                // Zoom to district bounds
+                const group = L.featureGroup();
+                selectedDistrictGroup.eachLayer(layer => group.addLayer(layer));
+                map.fitBounds(group.getBounds());
+            }
+
+            // Update selected class in sidebar list
+            document.querySelectorAll('#district-list li').forEach(item => {
+                if (item.dataset.districtName === district.name) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        async function updateMapAndData() {
+            initializeMap(); // Reset map
+            await fetchDistrictsAndDisplay(); // Load and display districts
+            // Optionally, you might want to fetch heatmap data here as well
+            // fetchAndDisplayHeatmap(); 
+        }
+
+        async function fetchAndDisplayHeatmap() {
+            const city = document.getElementById('city-input').value;
+            try {
+                const response = await fetch(`/api/population-heatmap/?city=${encodeURIComponent(city)}`);
+                const data = await response.json();
+
+                if (data.success && data.districts.length > 0) {
+                    // Leaflet.heat requires an array of [latitude, longitude, intensity]
+                    // We'll use the 'lat', 'lng' and 'population_density' of each district
+                    const heatData = data.districts.map(d => [d.lat, d.lng, d.population_density / 100]); // Normalize density for better visualization
+
+                    if (heatDataLayer) {
+                        map.removeLayer(heatDataLayer);
+                    }
+                    heatDataLayer = L.heatLayer(heatData, {
+                        radius: 25,
+                        blur: 15,
+                        maxZoom: 17,
+                        gradient: {0.4: 'blue', 0.65: 'lime', 1: 'red'}
+                    }).addTo(map);
+                    console.log('Тепловая карта населения обновлена.');
+                } else {
+                    console.warn('Не удалось получить данные для тепловой карты:', data.message || 'Нет данных.');
+                }
+            } catch (error) {
+                console.error('Ошибка при получении данных для тепловой карты:', error);
+            }
+        }
+
+        async function suggestLocation() {
+            const buildingType = document.getElementById('building-type').value;
+            const city = document.getElementById('city-input').value;
+            const resultDiv = document.getElementById('suggestion-text');
+            resultDiv.textContent = 'Думаю над оптимальным местом...';
+
+            try {
+                const response = await fetch('/api/suggest-location/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken') // Get CSRF token
+                    },
+                    body: JSON.stringify({ building_type: buildingType, city: city })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const suggestion = data.suggestion;
+                    resultDiv.innerHTML = `
+                        <strong>Район:</strong> ${suggestion.district}<br>
+                        <strong>Координаты:</strong> ${suggestion.coordinates.lat.toFixed(4)}, ${suggestion.coordinates.lng.toFixed(4)}<br>
+                        <strong>Уверенность:</strong> ${suggestion.confidence.toFixed(1)}/10<br>
+                        <strong>Обоснование:</strong> ${suggestion.reasoning}
+                    `;
+                    // Add marker to map
+                    if (suggestionMarker) {
+                        map.removeLayer(suggestionMarker);
+                    }
+                    suggestionMarker = L.marker([suggestion.coordinates.lat, suggestion.coordinates.lng]).addTo(map)
+                        .bindPopup(`<b>Рекомендация:</b> ${suggestion.district}<br>${suggestion.reasoning}`)
+                        .openPopup();
+                    map.setView([suggestion.coordinates.lat, suggestion.coordinates.lng], 13);
+                    fetchBuildingHistory(); // Refresh history
+                } else {
+                    resultDiv.textContent = `Ошибка: ${data.error}`;
+                    console.error('Error suggesting location:', data.error);
+                }
+            } catch (error) {
+                resultDiv.textContent = `Ошибка при запросе к серверу: ${error.message}`;
+                console.error('Fetch error:', error);
+            }
+        }
+
+        async function fetchAndDisplaySchools() {
+            const city = document.getElementById('city-input').value;
+            schoolMarkers.clearLayers(); // Clear previous school markers
+            try {
+                const response = await fetch(`/api/schools/?city=${encodeURIComponent(city)}`);
+                const data = await response.json();
+
+                if (data.schools && data.schools.length > 0) {
+                    data.schools.forEach(school => {
+                        L.marker([school.lat, school.lng])
+                            .addTo(schoolMarkers)
+                            .bindPopup(`<b>${school.name}</b>`);
+                    });
+                    console.log(`Отображено ${data.schools.length} школ.`);
+                } else {
+                    console.warn(data.message || 'Не удалось загрузить школы.');
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке школ:', error);
+            }
+        }
+
+        async function fetchBuildingHistory() {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '<li>Загрузка истории...</li>';
+            try {
+                const response = await fetch('/api/history/');
+                const data = await response.json();
+
+                if (data.success && data.history.length > 0) {
+                    historyList.innerHTML = '';
+                    data.history.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = `${item.created_at.substring(0, 10)}: ${item.building_type} в ${item.city} (${item.coordinates.lat.toFixed(4)}, ${item.coordinates.lng.toFixed(4)}) - Уверенность: ${item.confidence.toFixed(1)}`;
+                        historyList.appendChild(li);
+                    });
+                } else {
+                    historyList.innerHTML = '<li>История пуста.</li>';
+                }
+            } catch (error) {
+                historyList.innerHTML = `<li>Ошибка загрузки истории: ${error.message}</li>`;
+                console.error('Error fetching history:', error);
+            }
+        }
+
+        // Function to get CSRF token for POST requests
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Initialize map and load initial data on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeMap();
+            updateMapAndData(); // Initial load of districts
+            fetchBuildingHistory();
+        });
+
+    </script>
+</body>
+</html>
