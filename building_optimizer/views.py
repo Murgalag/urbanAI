@@ -266,3 +266,30 @@ def get_commercial_places(request):
             'success': False,
             'error': str(e)
         }, status=500)
+# Добавь только этот импорт в начало файла
+from .enhanced_gemini_service import EnhancedGeminiService
+
+# Добавь только эту функцию в конец файла
+@csrf_exempt
+@api_view(['POST'])
+def get_enhanced_school_info(request):
+    """API для получения дополнительной информации о школе"""
+    try:
+        data = json.loads(request.body)
+        school_name = data.get('school_name')
+        school_lat = data.get('lat')
+        school_lng = data.get('lng')
+        
+        if not school_name:
+            return Response({'success': False, 'error': 'Не указано название школы'}, status=400)
+        
+        gemini_service = EnhancedGeminiService()
+        school_info = gemini_service.generate_enhanced_school_info(school_name, school_lat, school_lng)
+        
+        return Response({
+            'success': True,
+            'school_info': school_info
+        })
+        
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=500)

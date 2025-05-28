@@ -103,7 +103,7 @@
             background: linear-gradient(45deg, #feca57, #ff9ff3);
         }
         
-        #result, #history, #stats {
+        #result, #history, #stats, #school-info {
             margin-top: 15px;
             padding: 15px;
             background: rgba(255,255,255,0.1);
@@ -112,7 +112,7 @@
             font-size: 0.85rem;
         }
         
-        #result h3, #history h3, #stats h3 {
+        #result h3, #history h3, #stats h3, #school-info h3 {
             margin-top: 0;
             margin-bottom: 10px;
             font-size: 1rem;
@@ -185,6 +185,46 @@
             text-align: center;
             font-size: 0.8rem;
         }
+
+        /* Стили для информации о школе */
+        .school-info-content {
+            background: rgba(255,255,255,0.15);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .school-info-item {
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+        }
+
+        .school-info-item strong {
+            color: #feca57;
+        }
+
+        .registry-badge {
+            display: inline-block;
+            background: #2ecc71;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            margin-left: 5px;
+        }
+
+        .no-registry-badge {
+            display: inline-block;
+            background: #e74c3c;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            margin-left: 5px;
+        }
+
+        .school-detailed-info {
+            max-height: 200px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -232,6 +272,13 @@
         <div id="result">
             <h3>🎯 Рекомендация:</h3>
             <p id="suggestion-text">Выберите тип здания для получения рекомендации.</p>
+        </div>
+
+        <div id="school-info" style="display: none;">
+            <h3>🏫 Информация о школе:</h3>
+            <div id="school-info-content" class="school-detailed-info">
+                <p>Выберите школу на карте для получения подробной информации.</p>
+            </div>
         </div>
 
         <div id="stats">
@@ -336,8 +383,11 @@
             updateStats('Загрузка данных...', true);
 
             try {
+                console.log(`🌍 Загружаем данные для города: ${city}`);
                 const response = await fetch(`/api/enhanced-heatmap/?city=${encodeURIComponent(city)}`);
                 const data = await response.json();
+
+                console.log('📡 Ответ от сервера:', data);
 
                 if (data.success) {
                     cityData = {
@@ -347,6 +397,13 @@
                         commercial: data.commercial_places || [],
                         heatmapData: data.heatmap_data || []
                     };
+
+                    console.log('📊 Загруженные данные:');
+                    console.log(`- Районы: ${cityData.districts.length}`);
+                    console.log(`- Школы: ${cityData.schools.length}`);
+                    console.log(`- Жилые дома: ${cityData.residential.length}`);
+                    console.log(`- Торговые точки: ${cityData.commercial.length}`);
+                    console.log(`- Точки тепловой карты: ${cityData.heatmapData.length}`);
 
                     // Обновляем статистику
                     updateStats(`
@@ -360,7 +417,7 @@
                     // Отображаем все слои
                     displayAllLayers();
                     
-                    console.log('✅ Все данные успешно загружены');
+                    console.log('✅ Все данные успешно загружены и отображены');
                 } else {
                     updateStats(`Ошибка: ${data.error}`);
                     console.error('❌ Ошибка загрузки данных:', data.error);
@@ -374,6 +431,103 @@
             fetchBuildingHistory();
         }
 
+        async function getEnhancedSchoolInfo(schoolName, schoolLat, schoolLng) {
+            console.log(`🔍 Запрашиваем дополнительную информацию о школе: ${schoolName}`);
+            
+            // Показываем блок с информацией о школе
+            const schoolInfoDiv = document.getElementById('school-info');
+            const schoolInfoContent = document.getElementById('school-info-content');
+            
+            schoolInfoDiv.style.display = 'block';
+            schoolInfoContent.innerHTML = `
+                <div class="loading">
+                    🔄 Загружаем информацию о школе "${schoolName}"...
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/enhanced-school-info/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ 
+                        school_name: schoolName,
+                        lat: schoolLat,
+                        lng: schoolLng
+                    })
+                });
+                
+                const data = await response.json();
+
+                if (data.success) {
+                    const info = data.school_info;
+                    
+                    schoolInfoContent.innerHTML = `
+                        <div class="school-info-content">
+                            <h4 style="margin: 0 0 10px 0; color: #feca57;">
+                                📚 ${schoolName}
+                                ${info.has_registry_data ? 
+                                    '<span class="registry-badge">📋 В реестре</span>' : 
+                                    '<span class="no-registry-badge">❌ Нет в реестре</span>'
+                                }
+                            </h4>
+                            
+                            <div class="school-info-item">
+                                <strong>👥 Учащиеся:</strong> ${info.students_count}
+                            </div>
+                            
+                            <div class="school-info-item">
+                                <strong>👨‍🏫 Сотрудники:</strong> ${info.staff_count}
+                            </div>
+                            
+                            <div class="school-info-item">
+                                <strong>🏛️ Форма собственности:</strong> ${info.ownership}
+                            </div>
+                            
+                            <div class="school-info-item">
+                                <strong>🗣️ Язык обучения:</strong> ${info.language}
+                            </div>
+                            
+                            <div class="school-info-item">
+                                <strong>🎓 Специализация:</strong> ${info.specialization}
+                            </div>
+                            
+                            <div class="school-info-item">
+                                <strong>📍 Адрес:</strong> ${info.address}
+                            </div>
+                            
+                            <div class="school-info-item">
+                                <strong>📞 Контакты:</strong> ${info.contact_info}
+                            </div>
+                            
+                            <div class="school-info-item" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2);">
+                                <strong>📝 Описание:</strong><br>
+                                <span style="font-size: 0.75rem; line-height: 1.4;">${info.description}</span>
+                            </div>
+                        </div>
+                    `;
+
+                    console.log('✅ Информация о школе получена и отображена');
+                } else {
+                    schoolInfoContent.innerHTML = `
+                        <div style="color: #e74c3c;">
+                            ❌ Ошибка получения информации: ${data.error}
+                        </div>
+                    `;
+                    console.error('❌ Ошибка получения информации о школе:', data.error);
+                }
+            } catch (error) {
+                schoolInfoContent.innerHTML = `
+                    <div style="color: #e74c3c;">
+                        ❌ Ошибка соединения: ${error.message}
+                    </div>
+                `;
+                console.error('❌ Ошибка запроса информации о школе:', error);
+            }
+        }
+
         function displayAllLayers() {
             clearAllLayers();
             
@@ -385,27 +539,40 @@
         }
 
         function clearAllLayers() {
+            console.log('🧹 Очищаем все слои...');
+            
             // Очищаем тепловую карту
             if (heatmap) {
                 heatmap.setMap(null);
                 heatmap = null;
+                console.log('🔥 Тепловая карта очищена');
             }
             
             // Очищаем полигоны районов
-            districtsPolygons.forEach(polygon => polygon.setMap(null));
+            districtsPolygons.forEach((polygon, index) => {
+                polygon.setMap(null);
+            });
             districtsPolygons = [];
+            console.log(`🗺️ Полигоны районов очищены`);
             
             // Очищаем маркеры школ
-            schoolsMarkers.forEach(marker => marker.setMap(null));
+            console.log(`🏫 Очищаем ${schoolsMarkers.length} маркеров школ...`);
+            schoolsMarkers.forEach((marker, index) => {
+                marker.setMap(null);
+            });
             schoolsMarkers = [];
             
             // Очищаем маркеры жилых домов
             residentialMarkers.forEach(marker => marker.setMap(null));
             residentialMarkers = [];
+            console.log('🏠 Жилые дома очищены');
             
             // Очищаем маркеры торговых точек
             commercialMarkers.forEach(marker => marker.setMap(null));
             commercialMarkers = [];
+            console.log('🏪 Торговые точки очищены');
+            
+            console.log('✅ Все слои очищены');
         }
 
         function displayHeatmap() {
@@ -490,42 +657,72 @@
         }
 
         function displaySchools() {
-            if (cityData.schools.length === 0) return;
+            if (cityData.schools.length === 0) {
+                console.log('❌ Нет данных о школах для отображения');
+                return;
+            }
 
-            cityData.schools.forEach(school => {
+            console.log(`🏫 Начинаем отображение ${cityData.schools.length} школ...`);
+
+            cityData.schools.forEach((school, index) => {
+                console.log(`Создаем маркер школы ${index + 1}: ${school.name} (${school.lat}, ${school.lng})`);
+                
                 const marker = new google.maps.Marker({
-                    position: { lat: school.lat, lng: school.lng },
+                    position: { lat: parseFloat(school.lat), lng: parseFloat(school.lng) },
                     map: map,
                     title: school.name,
                     icon: {
-                        url: 'data:image/svg+xml;base64,' + btoa(`
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="12" cy="12" r="10" fill="#4285f4"/>
-                                <text x="12" y="16" text-anchor="middle" fill="white" font-size="12">🏫</text>
-                            </svg>
-                        `),
-                        scaledSize: new google.maps.Size(30, 30)
-                    }
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 8,
+                        fillColor: '#4285f4',
+                        fillOpacity: 1,
+                        strokeColor: '#ffffff',
+                        strokeWeight: 2
+                    },
+                    label: {
+                        text: '🏫',
+                        color: 'white',
+                        fontSize: '12px'
+                    },
+                    zIndex: 1000
                 });
 
                 const infoWindow = new google.maps.InfoWindow({
                     content: `
-                        <div style="padding: 10px;">
+                        <div style="padding: 10px; min-width: 200px;">
                             <h4 style="margin: 0 0 10px 0; color: #333;">🏫 ${school.name}</h4>
                             <p style="margin: 5px 0;"><strong>Тип:</strong> Школа</p>
                             <p style="margin: 5px 0;"><strong>Координаты:</strong> ${school.lat.toFixed(4)}, ${school.lng.toFixed(4)}</p>
+                            <div style="margin-top: 10px;">
+                                <button onclick="map.setCenter({lat: ${school.lat}, lng: ${school.lng}}); map.setZoom(16);" 
+                                        style="margin-right: 5px; padding: 5px 10px; background: #4285f4; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                    📍 Центрировать
+                                </button>
+                                <button onclick="getEnhancedSchoolInfo('${school.name.replace(/'/g, "\\'")}', ${school.lat}, ${school.lng})" 
+                                        style="padding: 5px 10px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                    📊 Подробнее
+                                </button>
+                            </div>
                         </div>
                     `
                 });
 
                 marker.addListener('click', () => {
+                    console.log(`Клик по школе: ${school.name}`);
                     infoWindow.open(map, marker);
                 });
 
+                // Добавляем возможность получить информацию двойным кликом
+                marker.addListener('dblclick', () => {
+                    console.log(`Двойной клик по школе: ${school.name} - получаем подробную информацию`);
+                    getEnhancedSchoolInfo(school.name, school.lat, school.lng);
+                });
+
                 schoolsMarkers.push(marker);
+                console.log(`✅ Маркер школы ${index + 1} создан успешно`);
             });
 
-            console.log(`🏫 Школы: ${cityData.schools.length} маркеров`);
+            console.log(`✅ Школы: ${cityData.schools.length} маркеров отображено`);
         }
 
         function displayResidential() {
@@ -535,7 +732,7 @@
             const displayData = cityData.residential.filter((_, index) => index % 3 === 0);
 
             displayData.forEach(building => {
-                const opacity = 0.3 + (building.intensity * 0.7); // Вариация прозрачности
+                const opacity = 0.3 + (building.intensity * 0.7);
                 
                 const marker = new google.maps.Marker({
                     position: { lat: building.lat, lng: building.lng },
@@ -769,7 +966,7 @@
 
         // Инициализация при загрузке страницы
         window.addEventListener('load', () => {
-            console.log('🚀 Приложение Google Maps загружено');
+            console.log('🚀 Приложение Google Maps с расширенной информацией о школах загружено');
         });
     </script>
 </body>
