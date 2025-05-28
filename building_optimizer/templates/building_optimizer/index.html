@@ -3,165 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Оптимизатор Размещения Зданий</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet.heat.min.css" />
+    <title>Оптимизатор Размещения Зданий - Google Maps</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
             height: 100vh;
-            overflow: hidden; /* Prevent scrolling */
+            overflow: hidden;
+            background: #f8f9fa;
         }
+        
         #sidebar {
-            width: 300px;
+            width: 320px;
             padding: 20px;
-            background-color: #f4f4f4;
-            border-right: 1px solid #ddd;
-            overflow-y: auto; /* Enable scrolling for sidebar content */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         }
+        
+        #sidebar h2 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
         #map-container {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
+        
         #map {
             flex-grow: 1;
-            height: 100%; /* Make map fill remaining height */
-            z-index: 1; /* Ensure map is below sidebar if overlapping */
+            height: 100%;
         }
+        
         .form-group {
             margin-bottom: 15px;
         }
+        
         label {
             display: block;
             margin-bottom: 5px;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
+        
         input[type="text"],
         select,
         button {
             width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box; /* Include padding in width */
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #result, #history {
-            margin-top: 20px;
             padding: 10px;
-            border: 1px solid #eee;
-            background-color: #fff;
-            border-radius: 4px;
-            font-size: 0.9em;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 0.9rem;
         }
-        #history ul {
+        
+        input[type="text"],
+        select {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .toggle-button {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            margin: 5px 0;
+            padding: 8px;
+            font-size: 0.8rem;
+        }
+        
+        .toggle-button.active {
+            background: linear-gradient(45deg, #feca57, #ff9ff3);
+        }
+        
+        #result, #history, #stats {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            font-size: 0.85rem;
+        }
+        
+        #result h3, #history h3, #stats h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        #history ul, #stats ul {
             list-style: none;
             padding: 0;
+            margin: 0;
         }
-        #history li {
-            margin-bottom: 5px;
-            border-bottom: 1px dashed #eee;
-            padding-bottom: 5px;
+        
+        #history li, #stats li {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            font-size: 0.75rem;
         }
-        #history li:last-child {
-            border-bottom: none;
-        }
+        
         .loading {
             text-align: center;
             font-style: italic;
-            color: #555;
+            opacity: 0.8;
         }
-        .map-marker {
-            background-color: blue;
-            color: white;
-            padding: 5px 10px;
+        
+        .controls-section {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .controls-section h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .map-legend {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 200px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .data-counter {
+            background: rgba(255,255,255,0.2);
+            padding: 8px;
             border-radius: 5px;
-            white-space: nowrap;
-        }
-        .district-list-container {
-            margin-top: 20px;
-            border-top: 1px solid #ddd;
-            padding-top: 15px;
-        }
-        .district-list-container h3 {
-            margin-bottom: 10px;
-        }
-        .district-list {
-            list-style: none;
-            padding: 0;
-            max-height: 250px; /* Limit height for scrolling */
-            overflow-y: auto;
-            border: 1px solid #eee;
-            border-radius: 4px;
-        }
-        .district-list li {
-            padding: 8px 10px;
-            cursor: pointer;
-            border-bottom: 1px solid #f9f9f9;
-        }
-        .district-list li:hover {
-            background-color: #e9e9e9;
-        }
-        .district-list li.selected {
-            background-color: #d1e7ff;
-            font-weight: bold;
+            margin: 5px 0;
+            text-align: center;
+            font-size: 0.8rem;
         }
     </style>
 </head>
 <body>
     <div id="sidebar">
-        <h2>Оптимизатор Размещения</h2>
+        <h2>🏙️ Умный Планировщик</h2>
+        
         <div class="form-group">
-            <label for="city-input">Город:</label>
-            <input type="text" id="city-input" value="Бишкек">
-            <button onclick="updateMapAndData()">Загрузить данные по городу</button>
+            <label for="city-input">🌍 Город:</label>
+            <input type="text" id="city-input" value="Бишкек" placeholder="Введите название города">
+            <button onclick="loadAllCityData()">🔄 Загрузить все данные</button>
         </div>
 
         <div class="form-group">
-            <label for="building-type">Тип здания:</label>
+            <label for="building-type">🏢 Тип здания:</label>
             <select id="building-type">
-                <option value="school">Школа</option>
-                <option value="hospital">Больница</option>
-                <option value="kindergarten">Детский сад</option>
-                <option value="pharmacy">Аптека</option>
-                <option value="shopping_center">Торговый центр</option>
-                <option value="park">Парк</option>
+                <option value="school">🏫 Школа</option>
+                <option value="hospital">🏥 Больница</option>
+                <option value="kindergarten">🧸 Детский сад</option>
+                <option value="pharmacy">💊 Аптека</option>
+                <option value="shopping_center">🛍️ Торговый центр</option>
+                <option value="park">🌳 Парк</option>
             </select>
-            <button onclick="suggestLocation()">Предложить место</button>
+            <button onclick="suggestLocation()">🎯 Найти место</button>
+        </div>
+
+        <div class="controls-section">
+            <h4>📊 Слои карты</h4>
+            <button class="toggle-button active" onclick="toggleLayer('heatmap')" id="heatmap-btn">
+                🔥 Тепловая карта
+            </button>
+            <button class="toggle-button active" onclick="toggleLayer('districts')" id="districts-btn">
+                🗺️ Границы районов
+            </button>
+            <button class="toggle-button active" onclick="toggleLayer('schools')" id="schools-btn">
+                🏫 Школы
+            </button>
+            <button class="toggle-button" onclick="toggleLayer('residential')" id="residential-btn">
+                🏠 Жилые дома
+            </button>
+            <button class="toggle-button" onclick="toggleLayer('commercial')" id="commercial-btn">
+                🏪 Торговые точки
+            </button>
         </div>
 
         <div id="result">
-            <h3>Рекомендация:</h3>
-            <p id="suggestion-text">Выберите тип здания и город для рекомендации.</p>
+            <h3>🎯 Рекомендация:</h3>
+            <p id="suggestion-text">Выберите тип здания для получения рекомендации.</p>
         </div>
 
-        <div class="district-list-container">
-            <h3>Районы Бишкека:</h3>
-            <ul id="district-list" class="district-list">
-                <li>Загрузка районов...</li>
+        <div id="stats">
+            <h3>📈 Статистика:</h3>
+            <ul id="stats-list">
+                <li>Данные загружаются...</li>
             </ul>
         </div>
-        
-        <button onclick="fetchAndDisplaySchools()">Показать школы</button>
 
         <div id="history">
-            <h3>История запросов:</h3>
+            <h3>📝 История:</h3>
             <ul id="history-list">
                 <li>История пуста.</li>
             </ul>
@@ -169,379 +250,514 @@
     </div>
 
     <div id="map-container">
+        <div class="map-legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff0000;"></div>
+                <span>Высокая плотность</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffff00;"></div>
+                <span>Средняя плотность</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #00ff00;"></div>
+                <span>Низкая плотность</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4285f4;"></div>
+                <span>Школы</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff6b6b;"></div>
+                <span>Рекомендация</span>
+            </div>
+        </div>
         <div id="map"></div>
     </div>
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAg9d_gnmc2UZWUCFD6QkKGKqgO2v0spuA&libraries=visualization&callback=initMap" defer></script>
+    
     <script>
         let map;
+        let heatmap;
         let suggestionMarker;
-        let schoolMarkers = L.layerGroup(); // Layer for schools
-        let districtPolygons = L.layerGroup(); // Layer for district polygons
-        let activeDistrictPolygon = null; // To keep track of the currently highlighted district
-        let districtPolygonLookup = {}; // Store mapping between district names and polygons
+        let districtsPolygons = [];
+        let schoolsMarkers = [];
+        let residentialMarkers = [];
+        let commercialMarkers = [];
+        
+        // Состояние слоев
+        let layersState = {
+            heatmap: true,
+            districts: true,
+            schools: true,
+            residential: false,
+            commercial: false
+        };
+        
+        // Данные
+        let cityData = {
+            districts: [],
+            schools: [],
+            residential: [],
+            commercial: [],
+            heatmapData: []
+        };
 
-        function initializeMap() {
-            if (map) {
-                map.remove(); // Remove existing map if re-initializing
-            }
-            map = L.map('map').setView([42.87, 74.59], 12); // Центр Бишкека, зум 12
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-
-            schoolMarkers.addTo(map);
-            districtPolygons.addTo(map);
-        }
-
-        function getDistrictColor(districtName) {
-            // Generate different colors for different districts
-            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
-            const hash = districtName.split('').reduce((a, b) => {
-                a = ((a << 5) - a) + b.charCodeAt(0);
-                return a & a;
-            }, 0);
-            return colors[Math.abs(hash) % colors.length];
-        }
-
-        function validateAndFixPolygonCoords(coords) {
-            // Проверяем и исправляем координаты полигона
-            if (!Array.isArray(coords) || coords.length < 3) {
-                return null;
-            }
-            
-            // Убираем дублирующиеся соседние точки и невалидные координаты
-            const cleanCoords = [];
-            for (let i = 0; i < coords.length; i++) {
-                const current = coords[i];
-                
-                // Проверяем валидность координат
-                if (!Array.isArray(current) || current.length < 2 || 
-                    typeof current[0] !== 'number' || typeof current[1] !== 'number' ||
-                    isNaN(current[0]) || isNaN(current[1])) {
-                    continue;
-                }
-                
-                // Проверяем разумные значения координат для Бишкека
-                const lat = current[0];
-                const lng = current[1];
-                if (lat < 42.0 || lat > 43.5 || lng < 74.0 || lng > 75.5) {
-                    console.warn(`Координаты вне области Бишкека: [${lat}, ${lng}]`);
-                    continue;
-                }
-                
-                // Добавляем точку, если она не дублирует предыдущую
-                const prevPoint = cleanCoords[cleanCoords.length - 1];
-                if (!prevPoint || 
-                    Math.abs(prevPoint[0] - lat) > 0.00001 || 
-                    Math.abs(prevPoint[1] - lng) > 0.00001) {
-                    cleanCoords.push([lat, lng]);
-                }
-            }
-            
-            // Проверяем минимальное количество точек
-            if (cleanCoords.length < 3) {
-                return null;
-            }
-            
-            // Убеждаемся, что полигон замкнут
-            const first = cleanCoords[0];
-            const last = cleanCoords[cleanCoords.length - 1];
-            if (Math.abs(first[0] - last[0]) > 0.00001 || Math.abs(first[1] - last[1]) > 0.00001) {
-                cleanCoords.push([first[0], first[1]]);
-            }
-            
-            return cleanCoords;
-        }
-
-        async function fetchDistrictsAndDisplay() {
-            const city = document.getElementById('city-input').value;
-            const districtListElement = document.getElementById('district-list');
-            districtListElement.innerHTML = '<li>Загрузка районов...</li>';
-            
-            // Clear previous data
-            districtPolygons.clearLayers();
-            districtPolygonLookup = {};
-            
-            try {
-                const response = await fetch(`/api/districts/?city=${encodeURIComponent(city)}`);
-                const data = await response.json();
-
-                if (data.success && data.districts.length > 0) {
-                    districtListElement.innerHTML = ''; // Clear loading message
-                    
-                    data.districts.forEach((district, index) => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = district.name;
-                        listItem.dataset.lat = district.lat;
-                        listItem.dataset.lng = district.lng;
-                        listItem.dataset.districtName = district.name;
-
-                        // Store geometry for later use
-                        if (district.geometry && district.geometry.length > 0) {
-                            listItem.dataset.geometry = JSON.stringify(district.geometry);
-                        }
-
-                        listItem.onclick = () => highlightDistrict(district);
-                        districtListElement.appendChild(listItem);
-
-                        // ИСПРАВЛЕНИЕ: Правильная обработка геометрии районов
-                        if (district.geometry && district.geometry.length > 0) {
-                            const districtColor = getDistrictColor(district.name);
-                            
-                            // Для каждого района создаем отдельную группу полигонов
-                            const districtGroup = L.layerGroup();
-                            
-                            // Собираем все координаты для создания единого полигона или мультиполигона
-                            const allPolygonCoords = [];
-                            
-                            // Обрабатываем каждый полигон в геометрии района
-                            district.geometry.forEach((polygonCoords, polygonIndex) => {
-                                // Используем функцию валидации и исправления координат
-                                const validCoords = validateAndFixPolygonCoords(polygonCoords);
-                                
-                                if (validCoords) {
-                                    allPolygonCoords.push(validCoords);
-                                    console.log(`✓ Обработан полигон ${polygonIndex + 1} для района "${district.name}" с ${validCoords.length} точками`);
-                                } else {
-                                    console.warn(`✗ Полигон ${polygonIndex + 1} района "${district.name}" имеет некорректные координаты`);
-                                }
-                            });
-                            
-                            // Создаем полигон(ы) для района
-                            if (allPolygonCoords.length > 0) {
-                                try {
-                                    // ИСПРАВЛЕНИЕ: Создаем каждую часть района как отдельный независимый полигон
-                                    allPolygonCoords.forEach((coords, index) => {
-                                        try {
-                                            const polygon = L.polygon(coords, {
-                                                color: districtColor,
-                                                weight: 2,
-                                                opacity: 0.9,
-                                                fillColor: districtColor,
-                                                fillOpacity: 0.6,
-                                                smoothFactor: 1.0,
-                                                districtName: district.name,
-                                                partIndex: index
-                                            });
-                                            
-                                            polygon.bindPopup(`<b>${district.name}</b><br>Плотность: ${district.population_density || 'N/A'} чел/км²${allPolygonCoords.length > 1 ? `<br>Часть: ${index + 1}/${allPolygonCoords.length}` : ''}`);
-                                            districtGroup.addLayer(polygon);
-                                            
-                                            console.log(`✓ Создан независимый полигон ${index + 1} для района "${district.name}" с ${coords.length} точками`);
-                                        } catch (polygonError) {
-                                            console.error(`✗ Ошибка создания полигона ${index + 1} для района "${district.name}":`, polygonError);
-                                        }
-                                    });
-                                    
-                                    console.log(`✓ Район "${district.name}" создан из ${allPolygonCoords.length} независимых полигонов`);
-                                    
-                                } catch (error) {
-                                    console.error(`Общая ошибка создания полигонов для района "${district.name}":`, error);
-                                }
-                            }
-                            
-                            // Добавляем группу района на карту
-                            if (districtGroup.getLayers().length > 0) {
-                                districtGroup.addTo(districtPolygons);
-                                districtPolygonLookup[district.name] = districtGroup;
-                                console.log(`✓ Район "${district.name}" успешно добавлен на карту с ${districtGroup.getLayers().length} полигонами`);
-                            } else {
-                                console.error(`✗ Район "${district.name}" не добавлен - нет валидных полигонов`);
-                            }
-                            
-                        } else {
-                            console.warn(`Район "${district.name}" не имеет корректной геометрии`);
-                        }
-                    });
-                    
-                    console.log(`Всего загружено и отрисовано ${data.districts.length} районов.`);
-                } else {
-                    districtListElement.innerHTML = `<li>Не удалось загрузить районы для ${city}: ${data.message || 'Нет данных.'}</li>`;
-                    console.error('Ошибка при загрузке районов:', data.message || 'Неизвестная ошибка.');
-                }
-            } catch (error) {
-                districtListElement.innerHTML = `<li>Ошибка: ${error.message}</li>`;
-                console.error('Fetch error for districts:', error);
-            }
-        }
-
-        function highlightDistrict(district) {
-            // Reset all districts to default style
-            Object.values(districtPolygonLookup).forEach(districtGroup => {
-                districtGroup.eachLayer(polygon => {
-                    const originalColor = getDistrictColor(polygon.options.districtName);
-                    polygon.setStyle({
-                        color: originalColor,
-                        weight: 2,
-                        opacity: 0.8,
-                        fillOpacity: 0.2
-                    });
-                });
-            });
-
-            // Highlight selected district
-            const selectedDistrictGroup = districtPolygonLookup[district.name];
-            if (selectedDistrictGroup) {
-                selectedDistrictGroup.eachLayer(polygon => {
-                    polygon.setStyle({
-                        color: '#FF0000', // Red for highlight
-                        weight: 4,
-                        opacity: 1.0,
-                        fillOpacity: 0.4
-                    });
-                });
-
-                // Zoom to district bounds
-                const group = L.featureGroup();
-                selectedDistrictGroup.eachLayer(layer => group.addLayer(layer));
-                map.fitBounds(group.getBounds());
-            }
-
-            // Update selected class in sidebar list
-            document.querySelectorAll('#district-list li').forEach(item => {
-                if (item.dataset.districtName === district.name) {
-                    item.classList.add('selected');
-                } else {
-                    item.classList.remove('selected');
-                }
-            });
-        }
-
-        async function updateMapAndData() {
-            initializeMap(); // Reset map
-            await fetchDistrictsAndDisplay(); // Load and display districts
-            // Optionally, you might want to fetch heatmap data here as well
-            // fetchAndDisplayHeatmap(); 
-        }
-
-        async function fetchAndDisplayHeatmap() {
-            const city = document.getElementById('city-input').value;
-            try {
-                const response = await fetch(`/api/population-heatmap/?city=${encodeURIComponent(city)}`);
-                const data = await response.json();
-
-                if (data.success && data.districts.length > 0) {
-                    // Leaflet.heat requires an array of [latitude, longitude, intensity]
-                    // We'll use the 'lat', 'lng' and 'population_density' of each district
-                    const heatData = data.districts.map(d => [d.lat, d.lng, d.population_density / 100]); // Normalize density for better visualization
-
-                    if (heatDataLayer) {
-                        map.removeLayer(heatDataLayer);
+        function initMap() {
+            // Инициализация карты Google Maps
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 42.87, lng: 74.59 }, // Центр Бишкека
+                zoom: 12,
+                styles: [
+                    {
+                        featureType: "all",
+                        elementType: "geometry.fill",
+                        stylers: [{ saturation: -100 }, { lightness: 45 }]
+                    },
+                    {
+                        featureType: "water",
+                        elementType: "all",
+                        stylers: [{ color: "#b4d4e1" }]
                     }
-                    heatDataLayer = L.heatLayer(heatData, {
-                        radius: 25,
-                        blur: 15,
-                        maxZoom: 17,
-                        gradient: {0.4: 'blue', 0.65: 'lime', 1: 'red'}
-                    }).addTo(map);
-                    console.log('Тепловая карта населения обновлена.');
+                ],
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: true
+            });
+
+            // Загружаем начальные данные
+            loadAllCityData();
+        }
+
+        async function loadAllCityData() {
+            const city = document.getElementById('city-input').value;
+            updateStats('Загрузка данных...', true);
+
+            try {
+                const response = await fetch(`/api/enhanced-heatmap/?city=${encodeURIComponent(city)}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    cityData = {
+                        districts: data.districts || [],
+                        schools: data.schools || [],
+                        residential: data.residential_buildings || [],
+                        commercial: data.commercial_places || [],
+                        heatmapData: data.heatmap_data || []
+                    };
+
+                    // Обновляем статистику
+                    updateStats(`
+                        Районы: ${data.stats.districts_count}<br>
+                        Школы: ${data.stats.schools_count}<br>
+                        Жилые дома: ${data.stats.residential_count}<br>
+                        Торговые точки: ${data.stats.commercial_count}<br>
+                        Точки тепловой карты: ${data.stats.heatmap_points}
+                    `);
+
+                    // Отображаем все слои
+                    displayAllLayers();
+                    
+                    console.log('✅ Все данные успешно загружены');
                 } else {
-                    console.warn('Не удалось получить данные для тепловой карты:', data.message || 'Нет данных.');
+                    updateStats(`Ошибка: ${data.error}`);
+                    console.error('❌ Ошибка загрузки данных:', data.error);
                 }
             } catch (error) {
-                console.error('Ошибка при получении данных для тепловой карты:', error);
+                updateStats(`Ошибка соединения: ${error.message}`);
+                console.error('❌ Ошибка запроса:', error);
             }
+
+            // Обновляем историю
+            fetchBuildingHistory();
+        }
+
+        function displayAllLayers() {
+            clearAllLayers();
+            
+            if (layersState.heatmap) displayHeatmap();
+            if (layersState.districts) displayDistricts();
+            if (layersState.schools) displaySchools();
+            if (layersState.residential) displayResidential();
+            if (layersState.commercial) displayCommercial();
+        }
+
+        function clearAllLayers() {
+            // Очищаем тепловую карту
+            if (heatmap) {
+                heatmap.setMap(null);
+                heatmap = null;
+            }
+            
+            // Очищаем полигоны районов
+            districtsPolygons.forEach(polygon => polygon.setMap(null));
+            districtsPolygons = [];
+            
+            // Очищаем маркеры школ
+            schoolsMarkers.forEach(marker => marker.setMap(null));
+            schoolsMarkers = [];
+            
+            // Очищаем маркеры жилых домов
+            residentialMarkers.forEach(marker => marker.setMap(null));
+            residentialMarkers = [];
+            
+            // Очищаем маркеры торговых точек
+            commercialMarkers.forEach(marker => marker.setMap(null));
+            commercialMarkers = [];
+        }
+
+        function displayHeatmap() {
+            if (cityData.heatmapData.length === 0) return;
+
+            // Конвертируем данные для Google Maps Heatmap
+            const heatmapData = cityData.heatmapData.map(point => ({
+                location: new google.maps.LatLng(point.lat, point.lng),
+                weight: point.weight
+            }));
+
+            heatmap = new google.maps.visualization.HeatmapLayer({
+                data: heatmapData,
+                map: map,
+                radius: 25,
+                opacity: 0.8,
+                gradient: [
+                    'rgba(0, 255, 255, 0)',
+                    'rgba(0, 255, 255, 1)',
+                    'rgba(0, 191, 255, 1)',
+                    'rgba(0, 127, 255, 1)',
+                    'rgba(0, 63, 255, 1)',
+                    'rgba(0, 0, 255, 1)',
+                    'rgba(0, 0, 223, 1)',
+                    'rgba(0, 0, 191, 1)',
+                    'rgba(0, 0, 159, 1)',
+                    'rgba(0, 0, 127, 1)',
+                    'rgba(63, 0, 91, 1)',
+                    'rgba(127, 0, 63, 1)',
+                    'rgba(191, 0, 31, 1)',
+                    'rgba(255, 0, 0, 1)'
+                ]
+            });
+
+            console.log(`🔥 Тепловая карта: ${heatmapData.length} точек`);
+        }
+
+        function displayDistricts() {
+            if (cityData.districts.length === 0) return;
+
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+            
+            cityData.districts.forEach((district, index) => {
+                if (!district.geometry || district.geometry.length === 0) return;
+
+                const color = colors[index % colors.length];
+                
+                district.geometry.forEach(polygonPath => {
+                    if (!polygonPath || polygonPath.length < 3) return;
+
+                    const polygon = new google.maps.Polygon({
+                        paths: polygonPath,
+                        strokeColor: color,
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2,
+                        fillColor: color,
+                        fillOpacity: 0.35,
+                        map: map
+                    });
+
+                    // Добавляем информационное окно
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `
+                            <div style="padding: 10px;">
+                                <h4 style="margin: 0 0 10px 0; color: #333;">${district.name}</h4>
+                                <p style="margin: 5px 0;"><strong>Плотность:</strong> ${district.population_density} чел/км²</p>
+                                <p style="margin: 5px 0;"><strong>Координаты:</strong> ${district.lat.toFixed(4)}, ${district.lng.toFixed(4)}</p>
+                            </div>
+                        `
+                    });
+
+                    polygon.addListener('click', (event) => {
+                        infoWindow.setPosition(event.latLng);
+                        infoWindow.open(map);
+                    });
+
+                    districtsPolygons.push(polygon);
+                });
+            });
+
+            console.log(`🗺️ Районы: ${cityData.districts.length} полигонов`);
+        }
+
+        function displaySchools() {
+            if (cityData.schools.length === 0) return;
+
+            cityData.schools.forEach(school => {
+                const marker = new google.maps.Marker({
+                    position: { lat: school.lat, lng: school.lng },
+                    map: map,
+                    title: school.name,
+                    icon: {
+                        url: 'data:image/svg+xml;base64,' + btoa(`
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" fill="#4285f4"/>
+                                <text x="12" y="16" text-anchor="middle" fill="white" font-size="12">🏫</text>
+                            </svg>
+                        `),
+                        scaledSize: new google.maps.Size(30, 30)
+                    }
+                });
+
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `
+                        <div style="padding: 10px;">
+                            <h4 style="margin: 0 0 10px 0; color: #333;">🏫 ${school.name}</h4>
+                            <p style="margin: 5px 0;"><strong>Тип:</strong> Школа</p>
+                            <p style="margin: 5px 0;"><strong>Координаты:</strong> ${school.lat.toFixed(4)}, ${school.lng.toFixed(4)}</p>
+                        </div>
+                    `
+                });
+
+                marker.addListener('click', () => {
+                    infoWindow.open(map, marker);
+                });
+
+                schoolsMarkers.push(marker);
+            });
+
+            console.log(`🏫 Школы: ${cityData.schools.length} маркеров`);
+        }
+
+        function displayResidential() {
+            if (cityData.residential.length === 0) return;
+
+            // Показываем только каждый 3-й дом для производительности
+            const displayData = cityData.residential.filter((_, index) => index % 3 === 0);
+
+            displayData.forEach(building => {
+                const opacity = 0.3 + (building.intensity * 0.7); // Вариация прозрачности
+                
+                const marker = new google.maps.Marker({
+                    position: { lat: building.lat, lng: building.lng },
+                    map: map,
+                    icon: {
+                        url: 'data:image/svg+xml;base64,' + btoa(`
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="8" cy="8" r="6" fill="rgba(255, 165, 0, ${opacity})"/>
+                                <text x="8" y="11" text-anchor="middle" fill="white" font-size="8">🏠</text>
+                            </svg>
+                        `),
+                        scaledSize: new google.maps.Size(16, 16)
+                    }
+                });
+
+                residentialMarkers.push(marker);
+            });
+
+            console.log(`🏠 Жилые дома: ${displayData.length} из ${cityData.residential.length} маркеров`);
+        }
+
+        function displayCommercial() {
+            if (cityData.commercial.length === 0) return;
+
+            cityData.commercial.forEach(place => {
+                const opacity = 0.4 + (place.intensity * 0.6);
+                
+                const marker = new google.maps.Marker({
+                    position: { lat: place.lat, lng: place.lng },
+                    map: map,
+                    title: place.name,
+                    icon: {
+                        url: 'data:image/svg+xml;base64,' + btoa(`
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="10" cy="10" r="8" fill="rgba(138, 43, 226, ${opacity})"/>
+                                <text x="10" y="14" text-anchor="middle" fill="white" font-size="10">🏪</text>
+                            </svg>
+                        `),
+                        scaledSize: new google.maps.Size(20, 20)
+                    }
+                });
+
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `
+                        <div style="padding: 10px;">
+                            <h4 style="margin: 0 0 10px 0; color: #333;">🏪 ${place.name}</h4>
+                            <p style="margin: 5px 0;"><strong>Тип:</strong> ${place.place_type}</p>
+                            <p style="margin: 5px 0;"><strong>Интенсивность:</strong> ${(place.intensity * 100).toFixed(0)}%</p>
+                            <p style="margin: 5px 0;"><strong>Координаты:</strong> ${place.lat.toFixed(4)}, ${place.lng.toFixed(4)}</p>
+                        </div>
+                    `
+                });
+
+                marker.addListener('click', () => {
+                    infoWindow.open(map, marker);
+                });
+
+                commercialMarkers.push(marker);
+            });
+
+            console.log(`🏪 Торговые точки: ${cityData.commercial.length} маркеров`);
+        }
+
+        function toggleLayer(layerName) {
+            layersState[layerName] = !layersState[layerName];
+            
+            const button = document.getElementById(`${layerName}-btn`);
+            if (layersState[layerName]) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+            
+            // Перерисовываем все слои
+            displayAllLayers();
+            
+            console.log(`🔄 Слой ${layerName}: ${layersState[layerName] ? 'включен' : 'выключен'}`);
         }
 
         async function suggestLocation() {
             const buildingType = document.getElementById('building-type').value;
             const city = document.getElementById('city-input').value;
             const resultDiv = document.getElementById('suggestion-text');
-            resultDiv.textContent = 'Думаю над оптимальным местом...';
+            
+            resultDiv.innerHTML = '🤔 Анализирую оптимальное расположение...';
 
             try {
                 const response = await fetch('/api/suggest-location/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken') // Get CSRF token
+                        'X-CSRFToken': getCookie('csrftoken')
                     },
-                    body: JSON.stringify({ building_type: buildingType, city: city })
+                    body: JSON.stringify({ 
+                        building_type: buildingType, 
+                        city: city 
+                    })
                 });
+                
                 const data = await response.json();
 
                 if (data.success) {
                     const suggestion = data.suggestion;
+                    
                     resultDiv.innerHTML = `
-                        <strong>Район:</strong> ${suggestion.district}<br>
-                        <strong>Координаты:</strong> ${suggestion.coordinates.lat.toFixed(4)}, ${suggestion.coordinates.lng.toFixed(4)}<br>
-                        <strong>Уверенность:</strong> ${suggestion.confidence.toFixed(1)}/10<br>
-                        <strong>Обоснование:</strong> ${suggestion.reasoning}
+                        <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 5px;">
+                            <strong>🎯 Район:</strong> ${suggestion.district}<br>
+                            <strong>📍 Координаты:</strong> ${suggestion.coordinates.lat.toFixed(4)}, ${suggestion.coordinates.lng.toFixed(4)}<br>
+                            <strong>⭐ Уверенность:</strong> ${suggestion.confidence.toFixed(1)}/10<br>
+                            <strong>💡 Обоснование:</strong> ${suggestion.reasoning}
+                        </div>
                     `;
-                    // Add marker to map
+
+                    // Удаляем предыдущий маркер рекомендации
                     if (suggestionMarker) {
-                        map.removeLayer(suggestionMarker);
+                        suggestionMarker.setMap(null);
                     }
-                    suggestionMarker = L.marker([suggestion.coordinates.lat, suggestion.coordinates.lng]).addTo(map)
-                        .bindPopup(`<b>Рекомендация:</b> ${suggestion.district}<br>${suggestion.reasoning}`)
-                        .openPopup();
-                    map.setView([suggestion.coordinates.lat, suggestion.coordinates.lng], 13);
-                    fetchBuildingHistory(); // Refresh history
-                } else {
-                    resultDiv.textContent = `Ошибка: ${data.error}`;
-                    console.error('Error suggesting location:', data.error);
-                }
-            } catch (error) {
-                resultDiv.textContent = `Ошибка при запросе к серверу: ${error.message}`;
-                console.error('Fetch error:', error);
-            }
-        }
 
-        async function fetchAndDisplaySchools() {
-            const city = document.getElementById('city-input').value;
-            schoolMarkers.clearLayers(); // Clear previous school markers
-            try {
-                const response = await fetch(`/api/schools/?city=${encodeURIComponent(city)}`);
-                const data = await response.json();
-
-                if (data.schools && data.schools.length > 0) {
-                    data.schools.forEach(school => {
-                        L.marker([school.lat, school.lng])
-                            .addTo(schoolMarkers)
-                            .bindPopup(`<b>${school.name}</b>`);
+                    // Добавляем новый маркер рекомендации
+                    suggestionMarker = new google.maps.Marker({
+                        position: { 
+                            lat: suggestion.coordinates.lat, 
+                            lng: suggestion.coordinates.lng 
+                        },
+                        map: map,
+                        title: `Рекомендация: ${suggestion.district}`,
+                        icon: {
+                            url: 'data:image/svg+xml;base64,' + btoa(`
+                                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="20" cy="20" r="18" fill="#ff6b6b" stroke="white" stroke-width="2"/>
+                                    <text x="20" y="26" text-anchor="middle" fill="white" font-size="16">🎯</text>
+                                </svg>
+                            `),
+                            scaledSize: new google.maps.Size(40, 40)
+                        },
+                        animation: google.maps.Animation.BOUNCE
                     });
-                    console.log(`Отображено ${data.schools.length} школ.`);
+
+                    // Информационное окно для рекомендации
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `
+                            <div style="padding: 15px; max-width: 300px;">
+                                <h3 style="margin: 0 0 10px 0; color: #ff6b6b;">🎯 Рекомендуемое место</h3>
+                                <p><strong>Тип здания:</strong> ${buildingType}</p>
+                                <p><strong>Район:</strong> ${suggestion.district}</p>
+                                <p><strong>Уверенность:</strong> ${suggestion.confidence.toFixed(1)}/10</p>
+                                <p><strong>Обоснование:</strong> ${suggestion.reasoning}</p>
+                            </div>
+                        `
+                    });
+
+                    suggestionMarker.addListener('click', () => {
+                        infoWindow.open(map, suggestionMarker);
+                    });
+
+                    // Центрируем карту на рекомендации
+                    map.setCenter({ 
+                        lat: suggestion.coordinates.lat, 
+                        lng: suggestion.coordinates.lng 
+                    });
+                    map.setZoom(15);
+
+                    // Автоматически показываем информационное окно
+                    setTimeout(() => {
+                        infoWindow.open(map, suggestionMarker);
+                    }, 1000);
+
+                    // Обновляем историю
+                    fetchBuildingHistory();
+                    
+                    console.log('✅ Рекомендация получена и отображена');
                 } else {
-                    console.warn(data.message || 'Не удалось загрузить школы.');
+                    resultDiv.innerHTML = `❌ Ошибка: ${data.error}`;
+                    console.error('❌ Ошибка получения рекомендации:', data.error);
                 }
             } catch (error) {
-                console.error('Ошибка при загрузке школ:', error);
+                resultDiv.innerHTML = `❌ Ошибка соединения: ${error.message}`;
+                console.error('❌ Ошибка запроса рекомендации:', error);
             }
         }
 
         async function fetchBuildingHistory() {
-            const historyList = document.getElementById('history-list');
-            historyList.innerHTML = '<li>Загрузка истории...</li>';
             try {
                 const response = await fetch('/api/history/');
                 const data = await response.json();
+                const historyList = document.getElementById('history-list');
 
                 if (data.success && data.history.length > 0) {
                     historyList.innerHTML = '';
-                    data.history.forEach(item => {
+                    data.history.slice(0, 5).forEach(item => { // Показываем только последние 5
                         const li = document.createElement('li');
-                        li.textContent = `${item.created_at.substring(0, 10)}: ${item.building_type} в ${item.city} (${item.coordinates.lat.toFixed(4)}, ${item.coordinates.lng.toFixed(4)}) - Уверенность: ${item.confidence.toFixed(1)}`;
+                        li.innerHTML = `
+                            <strong>${item.building_type}</strong><br>
+                            ${item.city} (${item.coordinates.lat.toFixed(3)}, ${item.coordinates.lng.toFixed(3)})<br>
+                            <small>Уверенность: ${item.confidence.toFixed(1)}/10</small>
+                        `;
                         historyList.appendChild(li);
                     });
                 } else {
                     historyList.innerHTML = '<li>История пуста.</li>';
                 }
             } catch (error) {
-                historyList.innerHTML = `<li>Ошибка загрузки истории: ${error.message}</li>`;
-                console.error('Error fetching history:', error);
+                console.error('❌ Ошибка загрузки истории:', error);
+                document.getElementById('history-list').innerHTML = '<li>Ошибка загрузки истории.</li>';
             }
         }
 
-        // Function to get CSRF token for POST requests
+        function updateStats(content, isLoading = false) {
+            const statsList = document.getElementById('stats-list');
+            if (isLoading) {
+                statsList.innerHTML = `<li class="loading">${content}</li>`;
+            } else {
+                statsList.innerHTML = `<li>${content}</li>`;
+            }
+        }
+
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
                 const cookies = document.cookie.split(';');
                 for (let i = 0; i < cookies.length; i++) {
                     const cookie = cookies[i].trim();
-                    // Does this cookie string begin with the name we want?
                     if (cookie.substring(0, name.length + 1) === (name + '=')) {
                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                         break;
@@ -551,13 +767,10 @@
             return cookieValue;
         }
 
-        // Initialize map and load initial data on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeMap();
-            updateMapAndData(); // Initial load of districts
-            fetchBuildingHistory();
+        // Инициализация при загрузке страницы
+        window.addEventListener('load', () => {
+            console.log('🚀 Приложение Google Maps загружено');
         });
-
     </script>
 </body>
 </html>

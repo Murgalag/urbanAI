@@ -18,13 +18,55 @@ def get_population_heatmap(request):
     city = request.GET.get('city', 'Бишкек')
     
     try:
-        # Теперь get_or_create_population_data вернет данные с геометрией
         population_data_with_geometry = PopulationService.get_or_create_population_data(city)
         
         return Response({
             'success': True,
             'city': city,
-            'districts': population_data_with_geometry # Включаем геометрию
+            'districts': population_data_with_geometry
+        })
+    
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+@csrf_exempt
+@api_view(['GET'])
+def get_enhanced_heatmap_data(request):
+    """НОВОЕ API: Получить расширенные данные для тепловой карты Google Maps"""
+    city = request.GET.get('city', 'Бишкек')
+    
+    try:
+        osm_service = OpenStreetMapService()
+        
+        # Получаем все типы данных
+        districts_data = osm_service.get_districts_in_city(city)
+        residential_data = osm_service.get_residential_buildings_in_city(city)
+        commercial_data = osm_service.get_commercial_places_in_city(city)
+        schools_data = osm_service.get_schools_in_city(city)
+        
+        # Генерируем градиентные данные для тепловой карты
+        heatmap_data = osm_service.generate_gradient_heatmap_data(
+            districts_data, residential_data, commercial_data
+        )
+        
+        return Response({
+            'success': True,
+            'city': city,
+            'districts': districts_data,
+            'residential_buildings': residential_data,
+            'commercial_places': commercial_data,
+            'schools': schools_data,
+            'heatmap_data': heatmap_data,
+            'stats': {
+                'districts_count': len(districts_data),
+                'residential_count': len(residential_data),
+                'commercial_count': len(commercial_data),
+                'schools_count': len(schools_data),
+                'heatmap_points': len(heatmap_data)
+            }
         })
     
     except Exception as e:
@@ -48,10 +90,8 @@ def suggest_building_location(request):
                 'error': 'Не указан тип здания'
             }, status=400)
         
-        # Получаем данные о районах (сейчас они будут включать геометрию, но для Gemini она не нужна)
         population_data = PopulationService.get_or_create_population_data(city)
         
-        # Преобразуем в формат для AI (без геометрии, если Gemini ее не обрабатывает)
         districts_for_ai = []
         for district in population_data:
             districts_for_ai.append({
@@ -72,13 +112,12 @@ def suggest_building_location(request):
                 'error': 'Не удалось получить рекомендацию'
             }, status=500)
         
-        # Сохраняем запрос в базу данных
         building_request = BuildingRequest.objects.create(
             building_type=building_type,
             city=city,
             suggested_lat=suggestion['coordinates']['lat'],
             suggested_lng=suggestion['coordinates']['lng'],
-            population_density=0,  # Можно добавить позже
+            population_density=0,
             confidence_score=suggestion['confidence'],
             reasoning=suggestion['reasoning']
         )
@@ -167,14 +206,11 @@ def get_schools(request):
             'error': str(e)
         }, status=500)
 
-
 @api_view(['GET'])
 def get_districts(request):
     """API для получения данных о районах города из OpenStreetMap с их геометрией."""
     city = request.GET.get('city', 'Бишкек')
     try:
-        # Мы уже получаем эти данные в get_population_heatmap
-        # Но чтобы было отдельное API для районов, можем вызвать get_districts_in_city напрямую
         districts = OpenStreetMapService.get_districts_in_city(city)
         if districts:
             return Response({
@@ -189,6 +225,42 @@ def get_districts(request):
                 'districts': [],
                 'message': f"Районы не найдены в городе '{city}' или произошла ошибка при получении данных."
             })
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+@api_view(['GET']) 
+def get_residential_buildings(request):
+    """НОВОЕ API: Получить жилые дома"""
+    city = request.GET.get('city', 'Бишкек')
+    try:
+        buildings = OpenStreetMapService.get_residential_buildings_in_city(city)
+        return Response({
+            'success': True,
+            'city': city,
+            'buildings': buildings,
+            'count': len(buildings)
+        })
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+@api_view(['GET'])
+def get_commercial_places(request):
+    """НОВОЕ API: Получить коммерческие объекты"""
+    city = request.GET.get('city', 'Бишкек')
+    try:
+        places = OpenStreetMapService.get_commercial_places_in_city(city)
+        return Response({
+            'success': True,
+            'city': city,
+            'places': places,
+            'count': len(places)
+        })
     except Exception as e:
         return Response({
             'success': False,
