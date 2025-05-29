@@ -18,3 +18,11 @@ urlpatterns = [
     path('enhanced-school-info/', views.get_enhanced_school_info, name='enhanced_school_info'),
     path('analyze/', views.analyze_districts, name='analyze_districts'),
 ]
+
+urlpatterns += [
+    # Gemini AI анализ
+    path('ai/analyze-scenario/', views.analyze_school_scenario, name='analyze_scenario'),
+    path('ai/analyze-district/', views.analyze_bishkek_district, name='analyze_district'),
+    path('ai/districts/', views.get_bishkek_districts, name='bishkek_districts'),
+    path('ai/scenario/<int:scenario_id>/', views.get_scenario_data, name='scenario_data'),
+]

@@ -1,0 +1,94 @@
+{
+  "district_info": {
+    "name": "Центр (район Филармонии и Площади Ала-Тоо)",
+    "area_sqkm": 3.0,
+    "population": 27500,
+    "population_density": 9167,
+    "description": "Исторический и административный центр Бишкека с развитой инфраструктурой, престижными школами (включая гимназии №6, №13, №70) и умеренной плотностью населения."
+  },
+  "schools": {
+    "current": {
+      "total_count": 6,
+      "public_schools": 4,
+      "private_schools": 2,
+      "total_capacity": 5200,
+      "current_enrollment": 4600,
+      "overcrowding_percentage": 88.5
+    },
+    "distance_to_nearest_school_km": {
+      "min": 0.3,
+      "max": 1.0,
+      "average": 0.7
+    }
+  },
+  "demographics": {
+    "age_distribution": {
+      "0-6": 1925,
+      "7-17": 3850,
+      "18-24": 3300,
+      "25-40": 8250,
+      "41-60": 7150,
+      "61+": 3025
+    },
+    "school_age_children": {
+      "current": 3850,
+      "growth_rate_percent": 0.6
+    },
+    "population_growth": {
+      "annual_percent": 0.8,
+      "natural_growth": 0.4,
+      "migration_growth": 0.4
+    }
+  },
+  "forecast": {
+    "population": [
+      {"year": 2024, "population": 27500},
+      {"year": 2025, "population": 27720},
+      {"year": 2026, "population": 27942},
+      {"year": 2027, "population": 28165},
+      {"year": 2028, "population": 28390},
+      {"year": 2029, "population": 28617}
+    ],
+    "school_age_children": [
+      {"year": 2024, "children": 3850},
+      {"year": 2025, "children": 3873},
+      {"year": 2026, "children": 3896},
+      {"year": 2027, "children": 3919},
+      {"year": 2028, "children": 3943},
+      {"year": 2029, "children": 3967}
+    ],
+    "school_capacity_needed": [
+      {"year": 2024, "capacity": 3850},
+      {"year": 2025, "capacity": 3873},
+      {"year": 2026, "capacity": 3896},
+      {"year": 2027, "capacity": 3919},
+      {"year": 2028, "capacity": 3943},
+      {"year": 2029, "capacity": 3967}
+    ]
+  },
+  "infrastructure": {
+    "transportation": {
+      "public_transport_routes": 12,
+      "bus_stops_count": 25,
+      "average_walking_time_to_stop_min": 4
+    },
+    "planned_development": {
+      "new_residential_buildings": 2,
+      "estimated_new_residents": 400,
+      "completion_year": 2025,
+      "new_roads_planned": false
+    }
+  },
+  "social_factors": {
+    "parent_surveys": {
+      "need_new_school_percent": 10,
+      "overcrowding_concerns_percent": 15,
+      "distance_concerns_percent": 5
+    },
+    "community_requests": {
+      "formal_requests_count": 2,
+      "petitions_signatures": 200,
+      "public_meetings_count": 1
+    }
+  }
+}

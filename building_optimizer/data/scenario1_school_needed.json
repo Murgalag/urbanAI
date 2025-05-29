@@ -1,0 +1,94 @@
+{
+  "district_info": {
+    "name": "Микрорайон Асанбай",
+    "area_sqkm": 3.8,
+    "population": 42000,
+    "population_density": 11052,
+    "description": "Один из крупных и густонаселенных микрорайонов на юге Бишкека, характеризуется многоэтажной застройкой и высоким спросом на социальную инфраструктуру."
+  },
+  "schools": {
+    "current": {
+      "total_count": 4,
+      "public_schools": 3,
+      "private_schools": 1,
+      "total_capacity": 3200,
+      "current_enrollment": 4000,
+      "overcrowding_percentage": 125.0
+    },
+    "distance_to_nearest_school_km": {
+      "min": 0.5,
+      "max": 2.0,
+      "average": 1.2
+    }
+  },
+  "demographics": {
+    "age_distribution": {
+      "0-6": 4200,
+      "7-17": 6720,
+      "18-24": 4620,
+      "25-40": 13860,
+      "41-60": 8820,
+      "61+": 3780
+    },
+    "school_age_children": {
+      "current": 6720,
+      "growth_rate_percent": 4.5
+    },
+    "population_growth": {
+      "annual_percent": 3.5,
+      "natural_growth": 1.8,
+      "migration_growth": 1.7
+    }
+  },
+  "forecast": {
+    "population": [
+      {"year": 2024, "population": 42000},
+      {"year": 2025, "population": 43470},
+      {"year": 2026, "population": 44992},
+      {"year": 2027, "population": 46567},
+      {"year": 2028, "population": 48196},
+      {"year": 2029, "population": 49883}
+    ],
+    "school_age_children": [
+      {"year": 2024, "children": 6720},
+      {"year": 2025, "children": 7022},
+      {"year": 2026, "children": 7338},
+      {"year": 2027, "children": 7669},
+      {"year": 2028, "children": 8014},
+      {"year": 2029, "children": 8375}
+    ],
+    "school_capacity_needed": [
+      {"year": 2024, "capacity": 6720},
+      {"year": 2025, "capacity": 7022},
+      {"year": 2026, "capacity": 7338},
+      {"year": 2027, "capacity": 7669},
+      {"year": 2028, "capacity": 8014},
+      {"year": 2029, "capacity": 8375}
+    ]
+  },
+  "infrastructure": {
+    "transportation": {
+      "public_transport_routes": 6,
+      "bus_stops_count": 15,
+      "average_walking_time_to_stop_min": 7
+    },
+    "planned_development": {
+      "new_residential_buildings": 8,
+      "estimated_new_residents": 3000,
+      "completion_year": 2026,
+      "new_roads_planned": false
+    }
+  },
+  "social_factors": {
+    "parent_surveys": {
+      "need_new_school_percent": 90,
+      "overcrowding_concerns_percent": 94,
+      "distance_concerns_percent": 60
+    },
+    "community_requests": {
+      "formal_requests_count": 15,
+      "petitions_signatures": 4200,
+      "public_meetings_count": 5
+    }
+  }
+}

@@ -1,0 +1,260 @@
+{
+  "forecast_methodology": {
+    "description": "Прогноз основан на исторических данных о населении, рождаемости, миграции и планах городского развития",
+    "confidence_level": "средний",
+    "factors_considered": [
+      "Исторические тренды роста населения",
+      "Планы жилищного строительства",
+      "Миграционные тенденции",
+      "Демографические показатели",
+      "Экономические прогнозы"
+    ]
+  },
+  "city_forecast": {
+    "population": {
+      "2024": 1099800,
+      "2025": 1110800,
+      "2026": 1121900,
+      "2027": 1133200,
+      "2028": 1144600,
+      "2029": 1156100
+    },
+    "school_age_population": {
+      "2024": 186966,
+      "2025": 188836,
+      "2026": 190723,
+      "2027": 192644,
+      "2028": 194582,
+      "2029": 196537
+    }
+  },
+  "districts_forecast": {
+    "Ленинский": {
+      "population": {
+        "2024": 276000,
+        "2025": 281500,
+        "2026": 287200,
+        "2027": 293000,
+        "2028": 298900,
+        "2029": 304900
+      },
+      "school_age_children": {
+        "2024": 46920,
+        "2025": 47855,
+        "2026": 48824,
+        "2027": 49810,
+        "2028": 50813,
+        "2029": 51833
+      },
+      "urban_development": {
+        "new_residential_areas": [
+          {
+            "name": "Жилмассив Ак-Ордо",
+            "planned_dwellings": 3500,
+            "estimated_new_residents": 14000,
+            "completion_year": 2027
+          },
+          {
+            "name": "Жилмассив Калыс-Ордо",
+            "planned_dwellings": 2800,
+            "estimated_new_residents": 11200,
+            "completion_year": 2028
+          }
+        ],
+        "infrastructure_projects": [
+          {
+            "type": "road",
+            "description": "Расширение улицы Садырбаева",
+            "completion_year": 2025
+          },
+          {
+            "type": "public_transport",
+            "description": "Новые автобусные маршруты в жилмассивы",
+            "completion_year": 2026
+          }
+        ]
+      },
+      "school_capacity_forecast": {
+        "2024": {
+          "needed_capacity": 28152,
+          "current_capacity": 21600,
+          "deficit": 6552
+        },
+        "2026": {
+          "needed_capacity": 29294,
+          "current_capacity": 21600,
+          "deficit": 7694
+        },
+        "2029": {
+          "needed_capacity": 31100,
+          "current_capacity": 21600,
+          "deficit": 9500
+        }
+      }
+    },
+    "Октябрьский": {
+      "population": {
+        "2024": 295000,
+        "2025": 298000,
+        "2026": 301000,
+        "2027": 304100,
+        "2028": 307200,
+        "2029": 310400
+      },
+      "school_age_children": {
+        "2024": 50150,
+        "2025": 50660,
+        "2026": 51170,
+        "2027": 51697,
+        "2028": 52224,
+        "2029": 52768
+      },
+      "urban_development": {
+        "new_residential_areas": [
+          {
+            "name": "Микрорайон Джал-Артис",
+            "planned_dwellings": 1200,
+            "estimated_new_residents": 4800,
+            "completion_year": 2026
+          }
+        ],
+        "infrastructure_projects": [
+          {
+            "type": "education",
+            "description": "Строительство новой школы в микрорайоне Джал",
+            "completion_year": 2025,
+            "capacity": 1200
+          },
+          {
+            "type": "road",
+            "description": "Реконструкция улицы Айтматова",
+            "completion_year": 2024
+          }
+        ]
+      },
+      "school_capacity_forecast": {
+        "2024": {
+          "needed_capacity": 30090,
+          "current_capacity": 24300,
+          "deficit": 5790
+        },
+        "2026": {
+          "needed_capacity": 30702,
+          "current_capacity": 25500,
+          "deficit": 5202
+        },
+        "2029": {
+          "needed_capacity": 31661,
+          "current_capacity": 25500,
+          "deficit": 6161
+        }
+      }
+    },
+    "Первомайский": {
+      "population": {
+        "2024": 242300,
+        "2025": 244800,
+        "2026": 247300,
+        "2027": 249800,
+        "2028": 252300,
+        "2029": 254900
+      },
+      "school_age_children": {
+        "2024": 41191,
+        "2025": 41616,
+        "2026": 42041,
+        "2027": 42466,
+        "2028": 42891,
+        "2029": 43333
+      },
+      "urban_development": {
+        "new_residential_areas": [
+          {
+            "name": "ЖК Бишкек Парк",
+            "planned_dwellings": 800,
+            "estimated_new_residents": 3200,
+            "completion_year": 2025
+          }
+        ],
+        "infrastructure_projects": [
+          {
+            "type": "education",
+            "description": "Расширение школы №12",
+            "completion_year": 2024,
+            "additional_capacity": 400
+          }
+        ]
+      },
+      "school_capacity_forecast": {
+        "2024": {
+          "needed_capacity": 24715,
+          "current_capacity": 20200,
+          "deficit": 4515
+        },
+        "2026": {
+          "needed_capacity": 25225,
+          "current_capacity": 20200,
+          "deficit": 5025
+        },
+        "2029": {
+          "needed_capacity": 26000,
+          "current_capacity": 20200,
+          "deficit": 5800
+        }
+      }
+    },
+    "Свердловский": {
+      "population": {
+        "2024": 286500,
+        "2025": 286500,
+        "2026": 286400,
+        "2027": 286300,
+        "2028": 286200,
+        "2029": 285900
+      },
+      "school_age_children": {
+        "2024": 48705,
+        "2025": 48705,
+        "2026": 48688,
+        "2027": 48671,
+        "2028": 48654,
+        "2029": 48603
+      },
+      "urban_development": {
+        "new_residential_areas": [
+          {
+            "name": "ЖК Асанбай",
+            "planned_dwellings": 600,
+            "estimated_new_residents": 2400,
+            "completion_year": 2026
+          }
+        ],
+        "infrastructure_projects": [
+          {
+            "type": "education",
+            "description": "Реконструкция школы №29",
+            "completion_year": 2025,
+            "additional_capacity": 300
+          }
+        ]
+      },
+      "school_capacity_forecast": {
+        "2024": {
+          "needed_capacity": 29223,
+          "current_capacity": 22500,
+          "deficit": 6723
+        },
+        "2026": {
+          "needed_capacity": 29213,
+          "current_capacity": 22800,
+          "deficit": 6413
+        },
+        "2029": {
+          "needed_capacity": 29162,
+          "current_capacity": 22800,
+          "deficit": 6362
+        }
+      }
+    }
+  }
+} 

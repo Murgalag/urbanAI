@@ -1,0 +1,94 @@
+{
+  "district_info": {
+    "name": "Жилой массив Ак-Ордо",
+    "area_sqkm": 6.5,
+    "population": 22000,
+    "population_density": 3385,
+    "description": "Активно развивающийся жилой массив на юго-западной окраине Бишкека с преобладанием частной застройки, быстрым ростом населения и острой нехваткой школ. Пример школы - №96."
+  },
+  "schools": {
+    "current": {
+      "total_count": 2,
+      "public_schools": 2,
+      "private_schools": 0,
+      "total_capacity": 2500,
+      "current_enrollment": 4500,
+      "overcrowding_percentage": 180.0
+    },
+    "distance_to_nearest_school_km": {
+      "min": 1.0,
+      "max": 3.5,
+      "average": 2.2
+    }
+  },
+  "demographics": {
+    "age_distribution": {
+      "0-6": 3300,
+      "7-17": 5500,
+      "18-24": 2200,
+      "25-40": 7700,
+      "41-60": 2640,
+      "61+": 660
+    },
+    "school_age_children": {
+      "current": 5500,
+      "growth_rate_percent": 8.0
+    },
+    "population_growth": {
+      "annual_percent": 8.5,
+      "natural_growth": 2.5,
+      "migration_growth": 6.0
+    }
+  },
+  "forecast": {
+    "population": [
+      {"year": 2024, "population": 22000},
+      {"year": 2025, "population": 23870},
+      {"year": 2026, "population": 25909},
+      {"year": 2027, "population": 28111},
+      {"year": 2028, "population": 30501},
+      {"year": 2029, "population": 33094}
+    ],
+    "school_age_children": [
+      {"year": 2024, "children": 5500},
+      {"year": 2025, "children": 5940},
+      {"year": 2026, "children": 6415},
+      {"year": 2027, "children": 6928},
+      {"year": 2028, "children": 7482},
+      {"year": 2029, "children": 8081}
+    ],
+    "school_capacity_needed": [
+      {"year": 2024, "capacity": 5500},
+      {"year": 2025, "capacity": 5940},
+      {"year": 2026, "capacity": 6415},
+      {"year": 2027, "capacity": 6928},
+      {"year": 2028, "capacity": 7482},
+      {"year": 2029, "capacity": 8081}
+    ]
+  },
+  "infrastructure": {
+    "transportation": {
+      "public_transport_routes": 3,
+      "bus_stops_count": 10,
+      "average_walking_time_to_stop_min": 15
+    },
+    "planned_development": {
+      "new_residential_buildings": 150,
+      "estimated_new_residents": 6000,
+      "completion_year": 2028,
+      "new_roads_planned": true
+    }
+  },
+  "social_factors": {
+    "parent_surveys": {
+      "need_new_school_percent": 95,
+      "overcrowding_concerns_percent": 98,
+      "distance_concerns_percent": 75
+    },
+    "community_requests": {
+      "formal_requests_count": 20,
+      "petitions_signatures": 5000,
+      "public_meetings_count": 6
+    }
+  }
+}

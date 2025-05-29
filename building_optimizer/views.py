@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from .services import OpenStreetMapService, GeminiService, PopulationService
 from .models import BuildingRequest, PopulationData
 from .enhanced_gemini_service import EnhancedGeminiService
+from .ai.gemini_service import GeminiAnalysisService
 import json
 import random
 
@@ -357,5 +358,78 @@ def get_enhanced_school_info(request):
             'school_info': school_info
         })
         
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=500)
+
+@csrf_exempt
+@api_view(['POST'])
+def analyze_school_scenario(request):
+    """Анализ сценария через Gemini"""
+    try:
+        data = json.loads(request.body)
+        scenario_id = data.get('scenario_id')
+        
+        service = GeminiAnalysisService()
+        scenario_data = service.load_scenario_data(scenario_id)
+        
+        if not scenario_data:
+            return Response({'error': 'Сценарий не найден'}, status=404)
+        
+        analysis = service.analyze_school_need(scenario_data)
+        
+        return Response({
+            'success': True,
+            'scenario_id': scenario_id,
+            'district_name': scenario_data['district_info']['name'],
+            'analysis': analysis
+        })
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=500)
+
+@csrf_exempt
+@api_view(['POST']) 
+def analyze_bishkek_district(request):
+    """Анализ района Бишкека через Gemini"""
+    try:
+        data = json.loads(request.body)
+        district_name = data.get('district_name')
+        
+        service = GeminiAnalysisService()
+        districts = service.get_bishkek_districts()
+        
+        if district_name not in districts:
+            return Response({'error': 'Район не найден'}, status=404)
+        
+        analysis = service.analyze_bishkek_district(district_name)
+        
+        return Response({
+            'success': True,
+            'district_name': district_name,
+            'analysis': analysis
+        })
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=500)
+
+@api_view(['GET'])
+def get_bishkek_districts(request):
+    """Список районов Бишкека"""
+    try:
+        service = GeminiAnalysisService()
+        districts = service.get_bishkek_districts()
+        return Response({'success': True, 'districts': districts})
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=500)
+
+@api_view(['GET'])
+def get_scenario_data(request, scenario_id):
+    """Данные сценария"""
+    try:
+        service = GeminiAnalysisService()
+        data = service.load_scenario_data(scenario_id)
+        
+        if not data:
+            return Response({'error': 'Сценарий не найден'}, status=404)
+            
+        return Response({'success': True, 'data': data})
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=500)

@@ -1,0 +1,146 @@
+{
+  "city_info": {
+    "name": "Бишкек",
+    "country": "Кыргызстан",
+    "area_sqkm": 169.6,
+    "administrative_divisions": ["Ленинский", "Октябрьский", "Первомайский", "Свердловский"],
+    "total_population_2023": 1088900
+  },
+  "historical_data": {
+    "population": {
+      "2018": 1012500,
+      "2019": 1027200,
+      "2020": 1053900,
+      "2021": 1074400,
+      "2022": 1081400,
+      "2023": 1088900
+    },
+    "districts": {
+      "Ленинский": {
+        "area_sqkm": 75.1,
+        "population": {
+          "2018": 252000,
+          "2019": 255800,
+          "2020": 261500,
+          "2021": 267600,
+          "2022": 270400,
+          "2023": 273200
+        },
+        "school_age_children": {
+          "2018": 42840,
+          "2019": 43486,
+          "2020": 44455,
+          "2021": 45492,
+          "2022": 45968,
+          "2023": 46444
+        },
+        "schools": {
+          "count": 24,
+          "total_capacity": 21600,
+          "current_enrollment": 25800,
+          "overcrowding_percentage": 119.4
+        }
+      },
+      "Октябрьский": {
+        "area_sqkm": 28.2,
+        "population": {
+          "2018": 270000,
+          "2019": 273700,
+          "2020": 279800,
+          "2021": 286300,
+          "2022": 289200,
+          "2023": 292100
+        },
+        "school_age_children": {
+          "2018": 45900,
+          "2019": 46529,
+          "2020": 47566,
+          "2021": 48671,
+          "2022": 49164,
+          "2023": 49657
+        },
+        "schools": {
+          "count": 27,
+          "total_capacity": 24300,
+          "current_enrollment": 28100,
+          "overcrowding_percentage": 115.6
+        }
+      },
+      "Первомайский": {
+        "area_sqkm": 37.6,
+        "population": {
+          "2018": 221500,
+          "2019": 224800,
+          "2020": 229800,
+          "2021": 235100,
+          "2022": 237500,
+          "2023": 239900
+        },
+        "school_age_children": {
+          "2018": 37655,
+          "2019": 38216,
+          "2020": 39066,
+          "2021": 39967,
+          "2022": 40375,
+          "2023": 40783
+        },
+        "schools": {
+          "count": 22,
+          "total_capacity": 19800,
+          "current_enrollment": 23100,
+          "overcrowding_percentage": 116.7
+        }
+      },
+      "Свердловский": {
+        "area_sqkm": 28.7,
+        "population": {
+          "2018": 269000,
+          "2019": 272900,
+          "2020": 282800,
+          "2021": 285400,
+          "2022": 284300,
+          "2023": 283700
+        },
+        "school_age_children": {
+          "2018": 45730,
+          "2019": 46393,
+          "2020": 48076,
+          "2021": 48518,
+          "2022": 48331,
+          "2023": 48229
+        },
+        "schools": {
+          "count": 25,
+          "total_capacity": 22500,
+          "current_enrollment": 26800,
+          "overcrowding_percentage": 119.1
+        }
+      }
+    }
+  },
+  "demographic_trends": {
+    "birth_rate": {
+      "2018": 23.1,
+      "2019": 22.8,
+      "2020": 22.5,
+      "2021": 22.3,
+      "2022": 22.0,
+      "2023": 21.8
+    },
+    "migration": {
+      "internal_migration_rate": 3.2,
+      "international_migration_rate": -0.8,
+      "main_sources": ["Чуйская область", "Иссык-Кульская область", "Нарынская область"]
+    },
+    "urbanization_rate": 1.8
+  },
+  "education_statistics": {
+    "total_schools": 98,
+    "students_per_teacher": 28.4,
+    "average_class_size": 32.6,
+    "double_shift_schools_percentage": 87.2,
+    "triple_shift_schools_percentage": 12.8,
+    "school_construction_last_5_years": 6,
+    "school_renovation_last_5_years": 14
+  }
+} 
