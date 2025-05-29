@@ -12,7 +12,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     
     <style>
         :root {
@@ -490,24 +490,58 @@
         }
 
         .stat-card {
-            background: var(--light-gray);
+            background: var(--white);
             border: 2px solid var(--border-gray);
             border-radius: 8px;
-            padding: 1.5rem;
+            padding: 2rem 1.5rem;
             text-align: center;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stat-card.animate {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--secondary-gray);
+            transform: scaleX(0);
+            transition: transform 0.6s ease;
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
         }
 
         .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 6px 16px var(--shadow);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            border-color: var(--secondary-gray);
         }
 
         .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
+            font-size: 2.8rem;
+            font-weight: 800;
             color: var(--primary-black);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .stat-card:hover .stat-number {
+            transform: scale(1.05);
+            color: var(--secondary-gray);
         }
 
         .stat-label {
@@ -521,21 +555,66 @@
             background: var(--white);
             border: 2px solid var(--border-gray);
             border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            height: 300px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            height: 350px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .chart-container.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 3px;
+            background: var(--secondary-gray);
+            transition: left 0.6s ease;
+        }
+
+        .chart-container:hover::before {
+            left: 0;
+        }
+
+        .chart-container:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
         }
 
         .chart-container canvas {
-            max-height: 250px !important;
+            max-height: 280px !important;
         }
 
         .chart-title {
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 1.2rem;
+            font-weight: 700;
             color: var(--primary-black);
-            margin-bottom: 1rem;
+            margin-bottom: 1.2rem;
             text-align: center;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .chart-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: var(--secondary-gray);
+            border-radius: 1px;
         }
 
         /* School Info */
@@ -1526,7 +1605,48 @@
             document.getElementById('coveragePercent').textContent = stats.coveragePercent + '%';
             document.getElementById('populationServed').textContent = stats.populationServed.toLocaleString();
             
-            createCharts(data ? data.charts : null);
+            // Создаем графики с задержкой для красивой анимации
+            setTimeout(() => {
+                createCharts(data ? data.charts : null);
+                // Запускаем анимацию появления графиков и статистики
+                setTimeout(() => {
+                    animateChartsOnScroll();
+                    animateStatsCards();
+                }, 500);
+            }, 300);
+        }
+
+        // Анимация статистических карточек
+        function animateStatsCards() {
+            const statCards = document.querySelectorAll('.stat-card');
+            
+            statCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('animate');
+                }, index * 150); // Каждая карточка появляется с задержкой
+            });
+        }
+
+        // Анимация графиков при прокрутке
+        function animateChartsOnScroll() {
+            const chartContainers = document.querySelectorAll('.chart-container');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.classList.add('animate');
+                        }, index * 200); // Задержка для каждого графика
+                    }
+                });
+            }, {
+                threshold: 0.2,
+                rootMargin: '50px'
+            });
+
+            chartContainers.forEach(container => {
+                observer.observe(container);
+            });
         }
 
         // Create charts
@@ -1539,11 +1659,14 @@
                     labels: ['Октябрьский', 'Первомайский', 'Ленинский', 'Свердловский'],
                     datasets: [{
                         data: chartData ? chartData.district : [25, 30, 20, 25],
-                        backgroundColor: ['#ff4444', '#44ff44', '#4444ff', '#ffaa00']
+                        backgroundColor: ['#2563eb', '#059669', '#dc2626', '#7c3aed']
                     }]
                 },
                 options: {
                     responsive: true,
+                    animation: {
+                        duration: 2000
+                    },
                     plugins: { legend: { position: 'bottom' } }
                 }
             });
@@ -1557,11 +1680,14 @@
                     datasets: [{
                         label: 'Количество объектов',
                         data: chartData ? chartData.accessibility : [12, 19, 8, 5, 2],
-                        backgroundColor: '#4a4a4a'
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
                     }]
                 },
                 options: {
                     responsive: true,
+                    animation: {
+                        duration: 2000
+                    },
                     scales: { y: { beginAtZero: true } }
                 }
             });
@@ -1575,13 +1701,16 @@
                     datasets: [{
                         label: 'Нагрузка (%)',
                         data: chartData ? chartData.time : [65, 75, 80, 85, 90, 60, 45],
-                        borderColor: '#1a1a1a',
-                        backgroundColor: 'rgba(26, 26, 26, 0.1)',
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
                         fill: true
                     }]
                 },
                 options: {
                     responsive: true,
+                    animation: {
+                        duration: 2000
+                    },
                     scales: { y: { beginAtZero: true, max: 100 } }
                 }
             });
