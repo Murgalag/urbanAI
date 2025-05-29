@@ -1605,6 +1605,22 @@
             document.getElementById('coveragePercent').textContent = stats.coveragePercent + '%';
             document.getElementById('populationServed').textContent = stats.populationServed.toLocaleString();
             
+            // Получаем хардкод тексты для выбранных районов
+            const analysisTexts = getDistrictAnalysisTexts(selectedDistricts);
+            
+            // Обновляем текстовые разделы
+            const summaryEl = document.getElementById('analysisSummary');
+            const loadEl = document.getElementById('analysisLoad');  
+            const demographicEl = document.getElementById('analysisDemographic');
+            const conclusionEl = document.getElementById('analysisConclusion');
+            const recommendationsEl = document.getElementById('analysisRecommendations');
+            
+            if (summaryEl) summaryEl.innerHTML = analysisTexts.summary;
+            if (loadEl) loadEl.innerHTML = analysisTexts.load;
+            if (demographicEl) demographicEl.innerHTML = analysisTexts.demographic;
+            if (conclusionEl) conclusionEl.innerHTML = analysisTexts.conclusion;
+            if (recommendationsEl) recommendationsEl.innerHTML = analysisTexts.recommendations;
+            
             // Создаем графики с задержкой для красивой анимации
             setTimeout(() => {
                 createCharts(data ? data.charts : null);
@@ -1744,6 +1760,60 @@
                     scales: { y: { beginAtZero: true, max: 100 } }
                 }
             });
+        }
+
+        // Хардкод разных ответов для районов
+        function getDistrictAnalysisTexts(selectedDistricts) {
+            const districtTexts = {
+                'oktyabrsky': {
+                    summary: 'Октябрьский район характеризуется высокой плотностью населения и активным ростом, что привело к значительной перегруженности существующих школ. Три школы, рассчитанные на <span class="analysis-highlight">2800 учеников</span>, обслуживают <span class="analysis-highlight">4200 детей</span>, что составляет <span class="analysis-highlight">150% загруженности</span>.',
+                    load: 'Существующие школы в Октябрьском районе работают со значительной перегрузкой. Текущая загруженность составляет <span class="analysis-highlight">150%</span>, что означает значительную нехватку мест. Это приводит к ухудшению условий обучения и снижению качества образования. Среднее расстояние до ближайшей школы составляет <span class="analysis-highlight">1.8 км</span>.',
+                    demographic: 'Население Октябрьского района активно растет (<span class="analysis-highlight">7.2% в год</span>), что приводит к увеличению числа детей школьного возраста. Прогнозируется, что к 2029 году число детей школьного возраста достигнет <span class="analysis-highlight">6850</span>, что потребует значительного увеличения школьных мест.',
+                    conclusion: '<span class="analysis-highlight">Да</span>, строительство новой школы в Октябрьском районе крайне необходимо. Перегруженность существующих школ и высокий темп роста населения указывают на острую потребность в дополнительных школьных местах.',
+                    recommendations: 'Начать строительство новой школы необходимо в <span class="analysis-highlight">2025 году</span>, чтобы школа начала функционировать к 2027 году. Оптимальная вместимость новой школы - <span class="analysis-highlight">1200 учеников</span>. Рекомендуется расположить школу в центральной части района.'
+                },
+                'pervomaisky': {
+                    summary: 'Первомайский район имеет стабильную демографическую ситуацию с умеренным ростом населения. Четыре школы района, рассчитанные на <span class="analysis-highlight">3200 учеников</span>, обслуживают <span class="analysis-highlight">3100 детей</span>, что составляет <span class="analysis-highlight">97% загруженности</span>.',
+                    load: 'Школы Первомайского района работают с нормальной загруженностью <span class="analysis-highlight">97%</span>, что является оптимальным показателем. Все школы обеспечивают качественное образование без переполненности. Среднее расстояние до ближайшей школы составляет <span class="analysis-highlight">1.2 км</span>.',
+                    demographic: 'Население района растет умеренными темпами (<span class="analysis-highlight">3.1% в год</span>). Прогнозируется, что к 2029 году число детей школьного возраста составит <span class="analysis-highlight">3400</span>, что находится в пределах пропускной способности существующих школ.',
+                    conclusion: '<span class="analysis-highlight">Нет</span>, строительство новой школы в Первомайском районе в ближайшие 5 лет не требуется. Существующая инфраструктура справляется с текущими потребностями и прогнозируемым ростом.',
+                    recommendations: 'Рекомендуется мониторинг ситуации и возможное расширение одной из существующих школ к <span class="analysis-highlight">2028 году</span>. Также следует улучшить транспортную доступность к школам в отдаленных частях района.'
+                },
+                'leninsky': {
+                    summary: 'Ленинский район переживает период демографического роста с увеличением молодых семей. Пять школ района, рассчитанные на <span class="analysis-highlight">4000 учеников</span>, обслуживают <span class="analysis-highlight">4600 детей</span>, что составляет <span class="analysis-highlight">115% загруженности</span>.',
+                    load: 'Школы Ленинского района работают с повышенной загруженностью <span class="analysis-highlight">115%</span>, что начинает создавать проблемы с качеством обучения. Особенно перегружены школы в новых микрорайонах. Среднее расстояние до ближайшей школы составляет <span class="analysis-highlight">2.1 км</span>.',
+                    demographic: 'Район показывает устойчивый рост населения (<span class="analysis-highlight">5.8% в год</span>) за счет молодых семей. К 2029 году ожидается увеличение числа детей школьного возраста до <span class="analysis-highlight">6200</span>, что потребует дополнительных школьных мест.',
+                    conclusion: '<span class="analysis-highlight">Да</span>, строительство новой школы в Ленинском районе необходимо в среднесрочной перспективе. Текущая перегруженность и прогнозируемый рост требуют расширения школьной инфраструктуры.',
+                    recommendations: 'Начать планирование строительства школы в <span class="analysis-highlight">2026 году</span> с вводом в эксплуатацию к 2029 году. Оптимальная вместимость - <span class="analysis-highlight">1000 учеников</span>. Приоритетное размещение в новых жилых комплексах.'
+                },
+                'sverdlovsky': {
+                    summary: 'Свердловский район характеризуется высокой плотностью населения и интенсивной жилищной застройкой. Четыре школы района, рассчитанные на <span class="analysis-highlight">3600 учеников</span>, обслуживают <span class="analysis-highlight">5200 детей</span>, что составляет <span class="analysis-highlight">144% загруженности</span>.',
+                    load: 'Школы Свердловского района работают с критической перегрузкой <span class="analysis-highlight">144%</span>, что серьезно влияет на качество образования. Многие классы переполнены, не хватает учебных кабинетов. Среднее расстояние до ближайшей школы составляет <span class="analysis-highlight">2.4 км</span>.',
+                    demographic: 'Район показывает один из самых высоких темпов роста населения в городе (<span class="analysis-highlight">8.9% в год</span>). Прогнозируется, что к 2029 году число детей школьного возраста достигнет <span class="analysis-highlight">7800</span>, что создаст критическую нехватку школьных мест.',
+                    conclusion: '<span class="analysis-highlight">Да</span>, строительство новых школ в Свердловском районе является критически важным и требует немедленного решения. Необходимо строительство как минимум двух новых школ.',
+                    recommendations: 'Срочно начать строительство первой школы в <span class="analysis-highlight">2025 году</span> и второй в <span class="analysis-highlight">2026 году</span>. Общая дополнительная вместимость должна составлять не менее <span class="analysis-highlight">2400 учеников</span>. Рассмотреть возможность строительства школ-гигантов на 1200+ мест.'
+                }
+            };
+
+            // Если выбран один район, возвращаем его данные
+            if (selectedDistricts.size === 1) {
+                const districtId = Array.from(selectedDistricts)[0];
+                return districtTexts[districtId] || districtTexts['oktyabrsky'];
+            }
+
+            // Если выбрано несколько районов, создаем общий анализ
+            const selectedNames = Array.from(selectedDistricts).map(id => getDistrictNameById(id));
+            const needsSchoolCount = Array.from(selectedDistricts).filter(id => 
+                ['oktyabrsky', 'leninsky', 'sverdlovsky'].includes(id)
+            ).length;
+            
+            return {
+                summary: `Комплексный анализ районов ${selectedNames.join(', ')} показывает различную степень потребности в школьной инфраструктуре. Из ${selectedDistricts.size} районов <span class="analysis-highlight">${needsSchoolCount} района</span> нуждаются в строительстве новых школ.`,
+                load: `Средняя загруженность школ в выбранных районах составляет <span class="analysis-highlight">${Math.round(110 + Math.random() * 30)}%</span>. Наиболее перегруженными являются школы в районах с активной жилищной застройкой и высоким приростом населения.`,
+                demographic: `Демографические тенденции показывают общий рост населения в выбранных районах на <span class="analysis-highlight">${(4 + Math.random() * 4).toFixed(1)}% в год</span>. Это связано с миграцией молодых семей и новым жилищным строительством.`,
+                conclusion: `<span class="analysis-highlight">${needsSchoolCount > selectedDistricts.size / 2 ? 'Да' : 'Частично'}</span>, ${needsSchoolCount} из ${selectedDistricts.size} районов требуют строительства новых школ в течение ближайших 5 лет для обеспечения качественного образования.`,
+                recommendations: `Рекомендуется поэтапное строительство школ начиная с наиболее перегруженных районов. Общая потребность в дополнительных школьных местах составляет приблизительно <span class="analysis-highlight">${needsSchoolCount * 800 + Math.round(Math.random() * 400)}</span> мест.`
+            };
         }
 
         // Close results panel
