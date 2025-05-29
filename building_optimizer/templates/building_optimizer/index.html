@@ -764,8 +764,23 @@
                     <span>Школы</span>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-color" style="background: #1a1a1a;"></div>
-                    <span>Выбранный район</span>
+                    <div style="font-weight: bold; margin-bottom: 5px;">Районы:</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff4444;"></div>
+                    <span>Октябрьский</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #44ff44;"></div>
+                    <span>Первомайский</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4444ff;"></div>
+                    <span>Ленинский</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ffaa00;"></div>
+                    <span>Свердловский</span>
                 </div>
             </div>
             <div id="map"></div>
@@ -1151,12 +1166,13 @@
                     // Применяем стиль если район уже выбран
                     const districtIdCheck = getDistrictIdByName(district.name);
                     if (selectedDistricts.has(districtIdCheck)) {
-                        console.log(`🎯 Применяем выбранный стиль для района ${districtIdCheck}`);
+                        const districtColor = districtColors[districtIdCheck] || '#1a1a1a';
+                        console.log(`🎯 Применяем выбранный стиль для района ${districtIdCheck} с цветом ${districtColor}`);
                         polygon.setOptions({
-                            fillColor: '#1a1a1a',
+                            fillColor: districtColor,
                             fillOpacity: 0.6,
                             strokeWeight: 4,
-                            strokeColor: '#000000'
+                            strokeColor: districtColor
                         });
                     }
                 });
@@ -1363,15 +1379,25 @@
             });
         });
 
+        // Цвета для районов
+        const districtColors = {
+            'oktyabrsky': '#ff4444',      // красный
+            'pervomaisky': '#44ff44',     // зеленый  
+            'leninsky': '#4444ff',        // синий
+            'sverdlovsky': '#ffaa00'      // оранжевый
+        };
+
         // Toggle district selection
         function toggleDistrictSelection(districtId) {
             console.log(`🎯 Переключение выбора района: ${districtId}`);
             
             const districtItem = document.querySelector(`[data-district="${districtId}"]`);
             const polygons = districtPolygonMap.get(districtId);
+            const districtColor = districtColors[districtId] || '#1a1a1a';
             
             console.log(`📍 Найден DOM элемент: ${!!districtItem}`);
             console.log(`🗺️ Найдены полигоны: ${polygons ? polygons.length : 0}`);
+            console.log(`🎨 Цвет района: ${districtColor}`);
             
             if (selectedDistricts.has(districtId)) {
                 // Убираем выбор
@@ -1397,20 +1423,20 @@
                 selectedDistricts.add(districtId);
                 if (districtItem) districtItem.classList.add('selected');
                 
-                // Подсвечиваем полигоны
+                // Подсвечиваем полигоны своим цветом
                 if (polygons && Array.isArray(polygons)) {
                     polygons.forEach(polygon => {
                         if (polygon && typeof polygon.setOptions === 'function') {
                             polygon.setOptions({
-                                fillColor: '#1a1a1a',
+                                fillColor: districtColor,
                                 fillOpacity: 0.6,
                                 strokeWeight: 4,
-                                strokeColor: '#000000'
+                                strokeColor: districtColor
                             });
                         }
                     });
                 }
-                console.log(`✅ Район ${districtId} добавлен в выбор`);
+                console.log(`✅ Район ${districtId} добавлен в выбор с цветом ${districtColor}`);
             }
             
             console.log(`📊 Выбранные районы: [${Array.from(selectedDistricts).join(', ')}]`);
@@ -1513,7 +1539,7 @@
                     labels: ['Октябрьский', 'Первомайский', 'Ленинский', 'Свердловский'],
                     datasets: [{
                         data: chartData ? chartData.district : [25, 30, 20, 25],
-                        backgroundColor: ['#1a1a1a', '#4a4a4a', '#6a6a6a', '#8a8a8a']
+                        backgroundColor: ['#ff4444', '#44ff44', '#4444ff', '#ffaa00']
                     }]
                 },
                 options: {
