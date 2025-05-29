@@ -557,7 +557,7 @@
             border-radius: 8px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            height: 350px;
+            height: 400px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.06);
             transition: all 0.4s ease;
             position: relative;
@@ -592,7 +592,7 @@
         }
 
         .chart-container canvas {
-            max-height: 280px !important;
+            max-height: 320px !important;
         }
 
         .chart-title {
@@ -1685,10 +1685,40 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     animation: {
                         duration: 2000
                     },
-                    scales: { y: { beginAtZero: true } }
+                    layout: {
+                        padding: {
+                            bottom: 20
+                        }
+                    },
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 12
+                                },
+                                maxRotation: 0,
+                                minRotation: 0,
+                                padding: 10
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
                 }
             });
 
