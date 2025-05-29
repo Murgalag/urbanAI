@@ -645,6 +645,68 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--primary-black);
         }
+
+        /* AI Panel */
+        .ai-panel {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: var(--white);
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .ai-btn {
+            background: linear-gradient(135deg, var(--primary-black) 0%, var(--secondary-gray) 100%);
+            color: var(--white);
+            border: none;
+            padding: 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-consultation {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--light-gray);
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .ai-analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+
+        .analysis-card {
+            background: var(--white);
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .analysis-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px var(--shadow);
+        }
+
+        .analysis-card h4 {
+            color: var(--primary-black);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .analysis-card p {
+            color: var(--secondary-gray);
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -723,6 +785,23 @@
                     <div class="district-item" data-district="sverdlovsky">
                         <span><i class="fas fa-map-marker-alt me-2"></i>Свердловский район</span>
                     </div>
+                </div>
+            </div>
+
+            <!-- AI Panel -->
+            <div class="section-card ai-panel">
+                <h3 class="section-title">
+                    <i class="fas fa-robot"></i>
+                    AI-панель
+                </h3>
+                <button class="ai-btn">
+                    <i class="fas fa-robot me-2"></i>
+                    Запросить консультацию
+                </button>
+                <div class="ai-consultation">
+                    <p>Введите ваш запрос:</p>
+                    <textarea id="ai-input" rows="3"></textarea>
+                    <button class="ai-btn">Отправить</button>
                 </div>
             </div>
 

@@ -26,3 +26,13 @@ urlpatterns += [
     path('ai/districts/', views.get_bishkek_districts, name='bishkek_districts'),
     path('ai/scenario/<int:scenario_id>/', views.get_scenario_data, name='scenario_data'),
 ]
+
+urlpatterns += [
+    # Расширенные AI endpoints
+    path('ai/deep-analysis/', views.deep_district_analysis, name='deep_analysis'),
+    path('ai/predict/', views.predictive_modeling, name='predictive_modeling'), 
+    path('ai/optimize/', views.optimization_engine, name='optimization_engine'),
+    path('ai/impact/', views.impact_assessment, name='impact_assessment'),
+    path('ai/risks/', views.risk_matrix_analysis, name='risk_analysis'),
+    path('ai/consult/', views.ai_consultation, name='ai_consultation'),
+]

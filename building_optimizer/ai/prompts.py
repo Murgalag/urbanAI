@@ -41,4 +41,154 @@ BISHKEK_SCHOOL_ANALYSIS_PROMPT = """
 
 Район: {district}
 Данные: {data}
-""" 
+"""
+
+# --- Остальные промпты (advanced) ---
+
+"""AI промпты для комплексного урбанистического анализа"""
+
+DEEP_DISTRICT_ANALYSIS_PROMPT = """
+Урбанистический эксперт. Анализ районов: {districts}
+
+ДАННЫЕ: {data}
+
+АНАЛИЗ:
+1. Демографическое давление - рост/спад/стабильность
+2. Инфраструктурные дефициты - критичность 1-10
+3. Пространственные паттерны - кластеризация/распределение  
+4. Временные тренды - 5/10/15 лет
+5. Социально-экономические факторы
+
+ВЫХОД JSON:
+{{
+  "demographic_pressure": число,
+  "infrastructure_deficit": число,
+  "spatial_patterns": ["кластер1", "кластер2"],
+  "temporal_trends": {{"5y": "тренд", "10y": "тренд"}},
+  "critical_issues": ["проблема1", "проблема2"],
+  "solutions": ["решение1", "решение2"],
+  "investment_priority": число_1_10,
+  "risk_level": "низкий/средний/высокий"
+}}
+"""
+
+PREDICTIVE_MODELING_PROMPT = """
+ML-аналитик. Прогноз развития.
+
+ИСТОРИЧЕСКИЕ ДАННЫЕ: {historical_data}
+ТЕКУЩИЕ ПОКАЗАТЕЛИ: {current_metrics}
+
+МОДЕЛИ:
+- Линейная регрессия населения
+- Экспоненциальный рост инфраструктуры  
+- Логистическая кривая насыщения
+- Циклические паттерны
+
+JSON ПРОГНОЗ:
+{{
+  "population_forecast": {{
+    "2025": число, "2027": число, "2030": число
+  }},
+  "infrastructure_demand": {{
+    "schools": число, "hospitals": число, "transport": число
+  }},
+  "resource_requirements": {{
+    "budget_usd": число, "timeline_months": число, "personnel": число
+  }},
+  "confidence_intervals": {{
+    "low": число, "high": число
+  }},
+  "model_accuracy": число_процентов
+}}
+"""
+
+OPTIMIZATION_STRATEGY_PROMPT = """
+Стратегический планировщик. Оптимизация размещения.
+
+ОГРАНИЧЕНИЯ: {constraints}
+ЦЕЛИ: {objectives}  
+РЕСOURCES: {resources}
+
+ОПТИМИЗАЦИЯ:
+- Алгоритм размещения объектов
+- Минимизация транспортных затрат
+- Максимизация покрытия населения
+- Учет зонирования и ограничений
+
+СТРАТЕГИЯ JSON:
+{{
+  "optimal_locations": [
+    {{"lat": число, "lng": число, "priority": число, "type": "тип"}}
+  ],
+  "implementation_phases": [
+    {{"phase": число, "duration_months": число, "budget": число}}
+  ],
+  "efficiency_metrics": {{
+    "coverage_improvement": процент,
+    "cost_effectiveness": число,
+    "roi_timeline": месяцы
+  }},
+  "risk_mitigation": ["мера1", "мера2"]
+}}
+"""
+
+IMPACT_ASSESSMENT_PROMPT = """
+Аналитик воздействий. Оценка последствий.
+
+ПРОЕКТ: {project_data}
+ОБЛАСТЬ: {area_data}
+
+ВОЗДЕЙСТВИЯ:
+- Социальные эффекты
+- Экономические последствия  
+- Экологическое влияние
+- Транспортные изменения
+- Демографические сдвиги
+
+ОЦЕНКА JSON:
+{{
+  "social_impact": {{
+    "accessibility_improvement": процент,
+    "quality_of_life_index": число_1_10,
+    "community_satisfaction": процент
+  }},
+  "economic_impact": {{
+    "property_value_change": процент,
+    "job_creation": количество,
+    "local_business_effect": процент
+  }},
+  "environmental_impact": {{
+    "carbon_footprint": число_тонн,
+    "green_space_change": процент,
+    "noise_level_change": дБ
+  }},
+  "overall_score": число_1_100
+}}
+"""
+
+RISK_ANALYSIS_PROMPT = """
+Риск-аналитик. Многофакторная оценка.
+
+ФАКТОРЫ РИСКА: {risk_factors}
+ИСТОРИЧЕСКИЕ ДАННЫЕ: {historical_data}
+
+КАТЕГОРИИ:
+- Технические риски (строительство, эксплуатация)
+- Финансовые риски (бюджет, инфляция)
+- Социальные риски (сопротивление, адаптация)
+- Регуляторные риски (законы, разрешения)
+
+МАТРИЦА РИСКОВ JSON:
+{{
+  "risk_categories": {{
+    "technical": {{"probability": процент, "impact": число_1_10}},
+    "financial": {{"probability": процент, "impact": число_1_10}},
+    "social": {{"probability": процент, "impact": число_1_10}},
+    "regulatory": {{"probability": процент, "impact": число_1_10}}
+  }},
+  "overall_risk_score": число_1_100,
+  "mitigation_strategies": ["стратегия1", "стратегия2"],
+  "contingency_plans": ["план1", "план2"],
+  "monitoring_kpis": ["kpi1", "kpi2"]
+}}
+"""
